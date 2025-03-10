@@ -324,6 +324,7 @@ def main(page: ft.Page):
                 editor_component,
                 ft.Divider(),
                 table_component,
+                ft.Text("Alfabeto: 0 - 9, +, -, *, /, (, ), [, ], {, }", text_align=ft.TextAlign.CENTER),
             ],
             expand=True,
             scroll=ft.ScrollMode.AUTO

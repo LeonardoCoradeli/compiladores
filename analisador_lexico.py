@@ -61,7 +61,7 @@ def analisador_lexico(string):
                 table['erro']['col_ini'].append(col_ini)
                 table['erro']['col_fin'].append(col_fin)
                 table['lexema'].append(lexema)
-                table['token'].append("ERRO")
+                table['token'].append("ERRO: Simbolo não pertence ao alfabeto.")
                 table['linha'].append(numero_linha)
                 table['col_ini'].append(col_ini)
                 table['col_fin'].append(col_fin)
