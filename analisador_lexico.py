@@ -9,16 +9,18 @@ def analisador_lexico(string):
         "right bracket": r"\]",
         "left brace": r"\{",
         "right brace": r"\}",
-        "real": r"\b-?\d+\.\d+\b",
+        "real": r"\d+\.\d+|\d+\.\d*|\d*\.\d+",
         "integer": r"-?\d+",
-        "equality operator": r"=",
         "addition operator": r"\+",
         "subtraction operator": r"\-",
         "multiplication operator": r"\*",
         "division operator": r"\/",
-        "string": r'".*?"',
-        "identifier": r"\b[a-zA-Z][a-zA-Z0-9_]*\b"
+        
     }
+    
+    #"string": r'".*?"',
+    #"equality operator": r"=",
+    #"identifier": r"\b[a-zA-Z][a-zA-Z0-9_]*\b"
 
     table = {
         "lexema": [],
@@ -37,7 +39,7 @@ def analisador_lexico(string):
 
     for numero_linha, linha in enumerate(linhas, start=1):
 
-        for match in re.finditer(r'\d+\.\d+|[a-zA-Z0-9_]+|[+\-/*=]{1}|[(),\[\]\{\}]{1}', linha):
+        for match in re.finditer(r'\d+\.\d+|\d+\.\d*|\d*\.\d+|[a-zA-Z0-9_]+|[+\-/*=.]{1}|[(),\[\]\{\}]{1}', linha):
             lexema = match.group()
             print(lexema)
             col_ini = match.start() + 1
@@ -65,4 +67,3 @@ def analisador_lexico(string):
                 table['col_fin'].append(col_fin)
 
     return table
-
