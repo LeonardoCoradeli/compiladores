@@ -330,5 +330,4 @@ def main(page: ft.Page):
         )
     )
 
-port = int(os.environ.get("PORT", 5000))
-ft.app(target=main, view=ft.WEB_BROWSER, port=port),
+ft.app(target=main)

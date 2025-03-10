@@ -1,7 +1,5 @@
 import re
 
-# Tabela -> O que foi lido (lexema), O que representa (token), linha, coluna inicial, coluna final
-
 def analisador_lexico(string):
 
     tokens = {
@@ -39,8 +37,9 @@ def analisador_lexico(string):
 
     for numero_linha, linha in enumerate(linhas, start=1):
 
-        for match in re.finditer(r'\d+\.\d+|[a-zA-Z0-9_]+|[+\-/*]{1}|[(),\[\]\{\}]{1}', linha):
+        for match in re.finditer(r'\d+\.\d+|[a-zA-Z0-9_]+|[+\-/*=]{1}|[(),\[\]\{\}]{1}', linha):
             lexema = match.group()
+            print(lexema)
             col_ini = match.start() + 1
             col_fin = match.end()
 
@@ -66,3 +65,4 @@ def analisador_lexico(string):
                 table['col_fin'].append(col_fin)
 
     return table
+
