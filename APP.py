@@ -175,17 +175,30 @@ def editor(page, initial_content=None):
             page.update()
 
     def handle_keyboard(e: ft.KeyboardEvent):
+        nonlocal current_focus, text_fields, counter
         if e.key == "Arrow Down":
             move_focus(1)
         elif e.key == "Arrow Up":
             move_focus(-1)
+        elif e.key == "Backspace":
+            if len(text_fields) > 1 and text_fields[current_focus].value == "":
+                del text_fields[current_focus]
+                del container.controls[current_focus]
+                counter -= 1
+
+                for i, row in enumerate(container.controls, start=1):
+                    row.controls[0].content.value = str(i)
+                new_focus = current_focus - 1 if current_focus > 0 else 0
+                text_fields[new_focus].focus()
+                current_focus = new_focus
+                page.update()
 
     page.on_keyboard_event = handle_keyboard
 
     def add_row(e):
-        nonlocal counter
+        nonlocal counter, current_focus
         counter += 1
-        
+
         new_tf = ft.TextField(
             width=page.width * 0.95,
             on_submit=add_row,
@@ -195,9 +208,9 @@ def editor(page, initial_content=None):
             autofocus=True,
             dense=True,
         )
-        
+
         text_fields.append(new_tf)
-        
+
         new_row = ft.Row(
             controls=[
                 ft.Container(
@@ -214,10 +227,10 @@ def editor(page, initial_content=None):
             vertical_alignment=ft.CrossAxisAlignment.CENTER,
             height=25,
         )
-        
+
         container.controls.append(new_row)
-        page.update()
         current_focus = len(text_fields) - 1
+        page.update()
 
     container = ft.Column(
         controls=[],
@@ -237,7 +250,7 @@ def editor(page, initial_content=None):
             value=content
         )
         text_fields.append(tf)
-        
+
         row = ft.Row(
             controls=[
                 ft.Container(
@@ -324,7 +337,7 @@ def main(page: ft.Page):
                 editor_component,
                 ft.Divider(),
                 table_component,
-                ft.Text("Alfabeto: 0 - 9, +, -, *, /, (, ), [, ], {, }", text_align=ft.TextAlign.CENTER),
+                ft.Text("Alfabeto: 0 a 9, real separado por ., +, -, *, /, (, ), [, ]", text_align=ft.TextAlign.CENTER),
             ],
             expand=True,
             scroll=ft.ScrollMode.AUTO

@@ -1,27 +1,26 @@
 import re
 
-def analisador_lexico(string):
+def get_line_number(text, pos):
+    return text[:pos].count('\n') + 1
 
+def analisador_lexico(text):
     tokens = {
+        "comment": r"\/\/.*\n",
+        "comment block": r"\{.*(?:\}|\n.*|\n.*\})",
         "left parenthesis": r"\(",
         "right parenthesis": r"\)",
         "left bracket": r"\[",
         "right bracket": r"\]",
-        "left brace": r"\{",
-        "right brace": r"\}",
         "real": r"\d+\.\d+|\d+\.\d*|\d*\.\d+",
         "integer": r"-?\d+",
         "addition operator": r"\+",
         "subtraction operator": r"\-",
         "multiplication operator": r"\*",
         "division operator": r"\/",
-        
     }
     
-    #"string": r'".*?"',
-    #"equality operator": r"=",
-    #"identifier": r"\b[a-zA-Z][a-zA-Z0-9_]*\b"
-
+    padrao = re.compile(r'\d+\.\d+|\d+\.\d*|\d*\.\d+|\/\/.*\n|\{.*(?:\}|\n.*|\n.*\})|[a-zA-Z0-9_]+|[+\-/*=.]{1}|[(),\[\]\{\}]{1}', re.DOTALL)
+    
     table = {
         "lexema": [],
         "token": [],
@@ -34,36 +33,41 @@ def analisador_lexico(string):
             "col_fin": []
         }
     }
-
-    linhas = string.split("\n")
-
-    for numero_linha, linha in enumerate(linhas, start=1):
-
-        for match in re.finditer(r'\d+\.\d+|\d+\.\d*|\d*\.\d+|[a-zA-Z0-9_]+|[+\-/*=.]{1}|[(),\[\]\{\}]{1}', linha):
-            lexema = match.group()
-            print(lexema)
-            col_ini = match.start() + 1
-            col_fin = match.end()
-
-            flag = 1
-            for tipo_token, regex in tokens.items():
-                if re.fullmatch(regex, lexema):
-                    table['lexema'].append(lexema)
-                    table['token'].append(tipo_token)
-                    table['linha'].append(numero_linha)
-                    table['col_ini'].append(col_ini)
-                    table['col_fin'].append(col_fin)
-                    flag = 0
-                    break
-
-            if flag:
-                table['erro']['linha'].append(numero_linha)
-                table['erro']['col_ini'].append(col_ini)
-                table['erro']['col_fin'].append(col_fin)
+    
+    for match in padrao.finditer(text):
+        lexema = match.group()
+        inicio = match.start()
+        fim = match.end()
+        linha = get_line_number(text, inicio)
+        ultima_quebra = text.rfind('\n', 0, inicio)
+        col_ini = inicio - ultima_quebra if ultima_quebra != -1 else inicio + 1
+        col_fin = col_ini + (fim - inicio)
+        
+        flag = True
+        for tipo_token, regex in tokens.items():
+            if re.fullmatch(regex, lexema, re.DOTALL):
                 table['lexema'].append(lexema)
-                table['token'].append("ERRO: Simbolo não pertence ao alfabeto.")
-                table['linha'].append(numero_linha)
+                table['token'].append(tipo_token)
+                table['linha'].append(linha)
                 table['col_ini'].append(col_ini)
                 table['col_fin'].append(col_fin)
-
+                flag = False
+                break
+        
+        if flag:
+            table['erro']['linha'].append(linha)
+            table['erro']['col_ini'].append(col_ini)
+            table['erro']['col_fin'].append(col_fin)
+            table['lexema'].append(lexema)
+            table['token'].append("ERRO: Símbolo não pertence ao alfabeto.")
+            table['linha'].append(linha)
+            table['col_ini'].append(col_ini)
+            table['col_fin'].append(col_fin)
+    
     return table
+
+texto = '''// comentário de uma linha
+{ comentário
+multilinha }
+('''
+print(analisador_lexico(texto))
