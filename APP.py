@@ -1,7 +1,7 @@
 import flet as ft
 from analisador_lexico import analisador_lexico
 import os
-
+import re
 def menu(page: ft.Page):
 
     def load_file(e: ft.FilePickerResultEvent):
@@ -160,165 +160,68 @@ def table(page):
     )
     return container
 
+
 def editor(page, initial_content=None):
     initial_content = initial_content or [""]
-    counter = len(initial_content)
-    text_fields = []
-    current_focus = 0
-
-    def move_focus(direction):
-        nonlocal current_focus
-        new_index = current_focus + direction
-        if 0 <= new_index < len(text_fields):
-            text_fields[new_index].focus()
-            current_focus = new_index
-            page.update()
-
-    def handle_keyboard(e: ft.KeyboardEvent):
-        nonlocal current_focus, text_fields, counter
-        if e.key == "Arrow Down":
-            move_focus(1)
-        elif e.key == "Arrow Up":
-            move_focus(-1)
-        elif e.key == "Backspace":
-            if len(text_fields) > 1 and text_fields[current_focus].value == "":
-                del text_fields[current_focus]
-                del container.controls[current_focus]
-                counter -= 1
-
-                for i, row in enumerate(container.controls, start=1):
-                    row.controls[0].content.value = str(i)
-                new_focus = current_focus - 1 if current_focus > 0 else 0
-                text_fields[new_focus].focus()
-                current_focus = new_focus
-                page.update()
-
-    page.on_keyboard_event = handle_keyboard
-
-    def add_row(e):
-        nonlocal counter, current_focus
-        counter += 1
-
-        new_tf = ft.TextField(
-            width=page.width * 0.95,
-            on_submit=add_row,
-            border_color=ft.colors.TRANSPARENT,
-            text_size=12,
-            content_padding=2,
-            autofocus=True,
-            dense=True,
-        )
-
-        text_fields.append(new_tf)
-
-        new_row = ft.Row(
-            controls=[
-                ft.Container(
-                    content=ft.Text(f"{counter}", size=10),
-                    width=page.width * 0.02,
-                    alignment=ft.alignment.center,
-                    padding=0,
-                    margin=0,
-                ),
-                new_tf,
-            ],
-            spacing=0,
-            tight=True,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            height=25,
-        )
-
-        container.controls.append(new_row)
-        current_focus = len(text_fields) - 1
-        page.update()
-
-    container = ft.Column(
-        controls=[],
-        spacing=0,
-        tight=True,
-        scroll=ft.ScrollMode.AUTO,
-        height=500
+    # Cria o texto inicial com cada linha formatada como "n| <conteúdo>"
+    lines_with_numbers = [f"{i+1}| {line}" for i, line in enumerate(initial_content)]
+    initial_text = "\n".join(lines_with_numbers)
+    
+    text_field = ft.TextField(
+        value=initial_text,
+        multiline=True,
+        expand=True,
+        border=ft.InputBorder.NONE,
+        content_padding=ft.padding.all(5),
+        height=500,
+        text_size=12,
+        # Sempre que o texto mudar, reprocessa a formatação
+        on_change=lambda e: update_line_numbers()
     )
-
-    for i, content in enumerate(initial_content, start=1):
-        tf = ft.TextField(
-            width=page.width * 0.95,
-            border_color=ft.colors.TRANSPARENT,
-            text_size=12,
-            content_padding=2,
-            dense=True,
-            value=content
-        )
-        text_fields.append(tf)
-
-        row = ft.Row(
-            controls=[
-                ft.Container(
-                    content=ft.Text(f"{i}", size=10),
-                    width=page.width * 0.02,
-                    alignment=ft.alignment.center,
-                    padding=0,
-                    margin=0,
-                ),
-                tf,
-            ],
-            spacing=0,
-            tight=True,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,
-            height=25,
-        )
-        container.controls.append(row)
-
-    if text_fields:
-        text_fields[-1].on_submit = add_row
-
-    def get_content():
-        return [tf.value for tf in text_fields]
+    
+    def update_line_numbers():
+        """
+        Reinsere o número correto no início de cada linha.
+        Se houver mais de uma linha e alguma estiver "vazia" (ou seja, só com o prefixo),
+        essa linha será removida (permitindo que o usuário use o backspace para apagá-la).
+        """
+        # Divide o conteúdo atual em linhas
+        raw_lines = text_field.value.split("\n")
+        # Remove qualquer prefixo existente em cada linha
+        content_lines = [re.sub(r"^\d+\|\s*", "", line) for line in raw_lines]
+        
+        # Se houver mais de uma linha e alguma estiver vazia, consideramos que o usuário deseja apagá-la
+        if len(content_lines) > 1:
+            content_lines = [line for line in content_lines if line != ""]
+        
+        # Reconstroi cada linha com seu número atualizado
+        new_lines = [f"{i+1}| {line}" for i, line in enumerate(content_lines)]
+        new_text = "\n".join(new_lines)
+        
+        # Atualiza o TextField somente se houver alteração para evitar loops
+        if new_text != text_field.value:
+            text_field.value = new_text
+            text_field.update()
+    
+    def get_content_without_numbers():
+        """
+        Retorna o conteúdo do editor sem os números de linha.
+        """
+        lines = text_field.value.split("\n")
+        return [re.sub(r"^\d+\|\s*", "", line) for line in lines]
     
     def set_content(new_content):
-        nonlocal counter, text_fields, current_focus
-        container.controls.clear()
-        text_fields.clear()
-        counter = len(new_content)
-        current_focus = 0
-        
-        for i, content in enumerate(new_content, start=1):
-            tf = ft.TextField(
-                width=page.width * 0.95,
-                border_color=ft.colors.TRANSPARENT,
-                text_size=12,
-                content_padding=2,
-                dense=True,
-                value=content
-            )
-            text_fields.append(tf)
-            
-            row = ft.Row(
-                controls=[
-                    ft.Container(
-                        content=ft.Text(f"{i}", size=10),
-                        width=page.width * 0.02,
-                        alignment=ft.alignment.center,
-                        padding=0,
-                        margin=0,
-                    ),
-                    tf,
-                ],
-                spacing=0,
-                tight=True,
-                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                height=25,
-            )
-            container.controls.append(row)
-
-        if text_fields:
-            text_fields[-1].on_submit = add_row
-        page.update()
-
+        """
+        Define o conteúdo do editor, formatando cada linha com o número correspondente.
+        """
+        lines_with_numbers = [f"{i+1}| {line}" for i, line in enumerate(new_content)]
+        text_field.value = "\n".join(lines_with_numbers)
+        text_field.update()
+    
+    page.get_editor_content = get_content_without_numbers
     page.set_editor_content = set_content
-    page.get_editor_content = get_content
-
-    return container
+    
+    return text_field
 
 def main(page: ft.Page):
     page.title = "Compilador - Leonardo S. Coradeli e Marco V. M. Faria"
