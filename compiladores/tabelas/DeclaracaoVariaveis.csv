@@ -1,8 +1,8 @@
-,bool,int,identifier,procedure,right_parenteses,left_parenteses,variable,colon,semicolon,comma,$
+,boolean,int,identifier,procedure,right_parenteses,left_parenteses,variable,colon,semicolon,comma,$
 PDV,DV PDV′,DV PDV′,,,,,,,,
 PDV′,,,,,,,,semicolon DV PDV′,,erro
 DV,T LI,T LI,,,,,,,erro,,erro
-T,bool,int,sinc,sinc,sinc,sinc,sinc,sinc,sinc,sinc,sinc
+T,boolean,int,sinc,sinc,sinc,sinc,sinc,sinc,sinc,sinc,sinc
 LI,,,I LI′,,,,sinc,sinc,,sinc
 LI′,,,,,,,erro,erro,comma identifier LI′,erro
 PDS,,,,DP semicolon PDS,,,,,,erro

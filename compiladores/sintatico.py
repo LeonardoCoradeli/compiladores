@@ -1,4 +1,4 @@
-from tabelas import derivacaoVariaveis
+from tabelas import get_table
 
 class Grammar:
     def __init__(self):
@@ -7,13 +7,13 @@ class Grammar:
             'PDS', 'DP', 'PF_opt', 'PF', 'SPF_list', 'SPF_list′', 'SPF', 'I'
         ]
         self.terminals = [
-            'bool', 'int', 'identifier', 'procedure',
+            'boolean', 'int', 'identifier', 'procedure',
             'right_parenteses', 'left_parenteses', 'variable',
             'colon', 'semicolon', 'comma', '$'
         ]
         self.start_symbol = 'PDV'
         self.epsilon = 'ε'
-        self.parse_table = derivacaoVariaveis
+        self.parse_table = get_table()
     
     
     def get_production(self, nonterminal: str, terminal: str):

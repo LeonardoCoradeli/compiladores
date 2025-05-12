@@ -28,7 +28,7 @@ tokens = {
     'multiply': r'\*',
     'divide': r'/',
     'int': r'\bint\b',
-    'bool': r'\bbool\b',
+    'boolean': r'\bbool\b',
     'real': r'[0-9]+\.[0-9]+',
     'identifier': r'\b[a-zA-Z_][a-zA-Z0-9_]*\b',
     'integer': r'\b[0-9]+\b',

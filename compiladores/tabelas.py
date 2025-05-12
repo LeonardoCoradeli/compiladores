@@ -49,3 +49,30 @@ derivacaoVariaveis = {
     ('I', 'comma'): ['sinc'],
     ('I', '$'): ['sinc']
 }
+
+derivacaoVariaveis.update({
+    # <programa> ::= program <identificador> ; <bloco> .
+    ('PG', 'program'):    ['program',    'I', 'semicolon', 'B', 'dot'],
+
+    # <bloco> ::= <parte_de_declarações_de_variáveis> <parte_de_declarações_de_subrotinas> <comando_composto>
+    ('B',  'begin'):      ['PDV',        'PDS',      'C'],
+
+    # <comando_composto> ::= begin <comando> <comando_composto′> end
+    ('C',  'begin'):      ['begin',      'CM',       "C′", 'end'],
+    ("C′", 'semicolon'):  ['semicolon',  'CM',       "C′"],
+    ("C′", 'end'):        [],
+
+    # (Opcional: <comando> e <comando′> se ainda não estiverem no dicionário)
+    ('CM', 'identifier'): ['I',           "CM′"],
+    ('CM', 'if'):         ['COND1'],
+    ('CM', 'while'):      ['REP1'],
+    ('CM', 'begin'):      ['C'],
+    ("CM′",'semicolon'):  [],      # ε
+    # …e assim por diante conforme suas abreviações internas
+})
+
+def get_table():
+    """
+    Retorna a tabela de derivação.
+    """
+    return derivacaoVariaveis
