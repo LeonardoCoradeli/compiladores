@@ -1,0 +1,55 @@
+/* File: components/MenuBar/MenuBar.css */
+.header {
+    display: flex;
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 0.5rem 1rem;
+  }
+  
+  .menu-item {
+    position: relative;
+    margin-right: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: background 0.2s;
+  }
+  
+  .menu-item:hover {
+    background: rgba(236, 240, 241, 0.1);
+  }
+  
+  .submenu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #34495e;
+    border-radius: 4px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+  }
+  
+  .submenu-item {
+    padding: 0.25rem 0.5rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  
+  .submenu-item:hover {
+    background: rgba(236, 240, 241, 0.2);
+  }
+  
+  .nested {
+    position: relative;
+  }
+  
+  .subnested {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    background: #3b5160;
+    border-radius: 4px;
+    padding: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  

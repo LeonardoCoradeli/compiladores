@@ -1,0 +1,123 @@
+/* File: App.css */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+.header {
+  display: flex;
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 0.5rem 1rem;
+}
+.menu-item {
+  position: relative;
+  margin-right: 1.5rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: background 0.2s;
+}
+.menu-item:hover {
+  background: rgba(236, 240, 241, 0.1);
+}
+.submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: #34495e;
+  border-radius: 4px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.submenu-item {
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.submenu-item:hover {
+  background: rgba(236, 240, 241, 0.2);
+}
+.nested {
+  position: relative;
+}
+.subnested {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background: #3b5160;
+  border-radius: 4px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+.tabs {
+  display: flex;
+  background: #ecf0f1;
+}
+.tab-item {
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  color: #2c3e50;
+  transition: background 0.2s;
+}
+.tab-item:hover,
+.tab-item.active {
+  background: #bdc3c7;
+}
+.content {
+  flex: 1;
+  padding: 1rem;
+  background: #fff;
+  overflow: auto;
+}
+.resizable-panel {
+  position: relative;
+  background: #ecf0f1;
+  border-top: 1px solid #bdc3c7;
+  transition: height 0.2s;
+}
+.resize-handle {
+  height: 6px;
+  cursor: ns-resize;
+  background: #bdc3c7;
+}
+.panel-content {
+  padding: 1rem;
+}
+.toggle-panel-btn {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background: #3498db;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle-panel-btn:hover {
+  background: #2980b9;
+}
+.run-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  background: #3498db;
+  border: none;
+  color: white;
+  font-size: 18px;
+  border-radius: 50%;  /* Forma redonda */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;  /* Certifica que o botão ficará acima do editor */
+  transition: background 0.3s;
+}
+
+.run-button:hover {
+  background: #2980b9;
+}

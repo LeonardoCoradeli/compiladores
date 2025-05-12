@@ -1,0 +1,37 @@
+/* File: components/Tabs/Tabs.css */
+.tabs {
+  display: flex;
+  background: #ecf0f1;
+}
+
+.tab-item {
+  position: relative;           /* para posicionar o botão internamente */
+  padding: 0.75rem 2.5rem 0.75rem 1.5rem; /* espaço extra à direita */
+  cursor: pointer;
+  color: #2c3e50;
+  transition: background 0.2s;
+}
+
+.tab-item:hover,
+.tab-item.active {
+  background: #bdc3c7;
+}
+
+/* estilo do “×” */
+.tab-close-btn {
+  position: absolute;
+  right: 0.5rem;                /* canto direito, mas com um pequeno espaçamento */
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  padding: 0;                   /* sem padding para sumir com “bordas” */
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #2c3e50;
+}
+
+.tab-close-btn:hover {
+  color: #e74c3c;               /* opcional: muda a cor ao passar o mouse */
+}

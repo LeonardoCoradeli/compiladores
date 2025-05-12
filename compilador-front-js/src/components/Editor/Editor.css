@@ -1,0 +1,27 @@
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: 82vh;
+  width: 97vw;
+  margin: 0;
+  padding: 0;
+}
+
+.editor-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f0f0f0;
+}
+
+.editor-actions input,
+.editor-actions button {
+  padding: 5px;
+  font-size: 1rem;
+}
+
+.ace_editor {
+  flex-grow: 1;
+  width: 100%;
+  height: 100%;
+}
