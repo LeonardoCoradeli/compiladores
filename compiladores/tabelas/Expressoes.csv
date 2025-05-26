@@ -1,0 +1,16 @@
+Não-Terminal,plus,minus,identifier,integer,real,true,false,right_parenteses,not,comma,left_parenteses,equals,not_equals,lt,lte,gt,gte,execute_conditional,execute_loop,end_command,semicolon,otherwise_conditional,multiply,divide,and,or
+L_EXP_OPT,L_EXP,L_EXP,L_EXP,L_EXP,L_EXP,L_EXP,L_EXP,L_EXP,L_EXP,ε,,,,,,,,,,,,,,,,
+L_EXP,"EXP L_EXP_TAIL","EXP L_EXP_TAIL","EXP L_EXP_TAIL","EXP L_EXP_TAIL","EXP L_EXP_TAIL","EXP L_EXP_TAIL","EXP L_EXP_TAIL","EXP L_EXP_TAIL","EXP L_EXP_TAIL",,ε,,,,,,,,,,,,,,,,
+L_EXP_TAIL,,,,,,,,,ε,ε,,,,,,,,,,,,,,,
+EXP,"EXP_S EXP_TAIL","EXP_S EXP_TAIL","EXP_S EXP_TAIL","EXP_S EXP_TAIL","EXP_S EXP_TAIL","EXP_S EXP_TAIL","EXP_S EXP_TAIL","EXP_S EXP_TAIL","EXP_S EXP_TAIL",,,,,,,,,,,,,,,,,
+EXP_TAIL,,,,,,,,,,,ε,"REL EXP_S","REL EXP_S","REL EXP_S","REL EXP_S","REL EXP_S","REL EXP_S",ε,ε,ε,ε,ε,,,,
+REL,,,,,,,,,,,,equals,not_equals,lt,lte,gt,gte,,,,,,,,,,
+EXP_S,"TERM_OPT_SIGN TERM TERM_TAIL","TERM_OPT_SIGN TERM TERM_TAIL","TERM_OPT_SIGN TERM TERM_TAIL","TERM_OPT_SIGN TERM TERM_TAIL","TERM_OPT_SIGN TERM TERM_TAIL","TERM_OPT_SIGN TERM TERM_TAIL","TERM_OPT_SIGN TERM TERM_TAIL","TERM_OPT_SIGN TERM TERM_TAIL","TERM_OPT_SIGN TERM TERM_TAIL",,,,,,,,,,,,,,,,,
+TERM_OPT_SIGN,plus,minus,ε,ε,ε,ε,ε,ε,ε,,,,,,,,,,,,,,,,,,
+TERM_TAIL,"ADD_OP TERM TERM_TAIL","ADD_OP TERM TERM_TAIL",,,,,,,,,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,,,,"ADD_OP TERM TERM_TAIL"
+ADD_OP,plus,minus,,,,,,,,,,,,,,,,,,,,,,,,or
+TERM,,,,FAT FAT_TAIL,FAT FAT_TAIL,FAT FAT_TAIL,FAT FAT_TAIL,FAT FAT_TAIL,FAT FAT_TAIL,,,,,,,,,,,,,,,,,,,
+FAT_TAIL,ε,ε,,,,,,,,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,"MULT_OP FAT FAT_TAIL","MULT_OP FAT FAT_TAIL","MULT_OP FAT FAT_TAIL",ε
+MULT_OP,,,,,,,,,,,,,,,,,,,,,,,,,multiply,divide,and,
+FAT,,,,integer,real,true,false,"right_parenteses EXP left_parenteses","not FAT",,,,,,,,,,,,,,,,,,"identifier VAR_ACCESS"
+VAR_ACCESS,ε,ε,,,,,,,,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,

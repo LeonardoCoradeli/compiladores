@@ -101,14 +101,20 @@ export default function App() {
       case 'Léxicos':
         addTab({ title: 'Tabela Léxicos', type: 'table' });
         break;
-      case 'Sintáticos':
-      case 'Sintaticos':
-      case 'Declaração de variáveis':
-      case 'Declaracao de variaveis':
-        addTab({ title: 'Tabela Declaração de Variáveis', type: 'CsvTable' });
+      case 'Programa':
+        addTab({ title: 'Programa', type: 'CsvTable', tableId: 'Programa' });
+        break;
+      case 'Comandos':
+        addTab({ title: 'Comandos', type: 'CsvTable', tableId: 'Comandos' });
+        break;
+      case 'Expressoes':
+        addTab({ title: 'Expressões', type: 'CsvTable', tableId: 'Expressoes' });
+        break;
+      case 'Completo':
+        addTab({ title: 'Completa', type: 'CsvTable', tableId: 'Completo' });
         break;
       default:
-        console.log(`Ação de menu: ${action}`);
+        console.log(`Ação de menu não tratada: ${action}`);
     }
   };
 
@@ -185,7 +191,7 @@ export default function App() {
   useEffect(() => {
     if (activeTab && activeTab.type === 'CsvTable') {
       setIsLoading(true);
-      fetch('http://localhost:5000/tabela/DeclaracaoVariaveis')
+      fetch('http://localhost:5000/tabela/'+activeTab.title)
         .then(res => {
           if (!res.ok) throw new Error(`Status ${res.status}`);
           return res.json();

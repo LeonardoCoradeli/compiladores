@@ -1,25 +1,18 @@
-# Tabela de Análise Sintática Preditiva (LL(1)) - VERSÃO COM MAIS SINC
-# Baseada na sua última tabela, adicionando entradas 'False' (sinc)
 parsing_table = {
-    # --- Entradas existentes da sua tabela ---
     ('PG', 'program'): ['program', 'identifier', 'semicolon', 'B', 'dot'],
     ('B', 'int'): ['VAR_DECL_PART_OPT', 'D_SUB_P_OPT', 'C_COMP'],
     ('B', 'boolean'): ['VAR_DECL_PART_OPT', 'D_SUB_P_OPT', 'C_COMP'],
     ('B', 'procedure'): ['VAR_DECL_PART_OPT', 'D_SUB_P_OPT', 'C_COMP'],
     ('B', 'start_command'): ['VAR_DECL_PART_OPT', 'D_SUB_P_OPT', 'C_COMP'],
-    ('B', 'dot'): False, # Sinc existente
+    ('B', 'dot'): False,
     ('VAR_DECL_PART_OPT', 'int'): ['VAR_DECL_STMT', 'VAR_DECL_PART_OPT'],
     ('VAR_DECL_PART_OPT', 'boolean'): ['VAR_DECL_STMT', 'VAR_DECL_PART_OPT'],
     ('VAR_DECL_PART_OPT', 'procedure'): ['ε'],
     ('VAR_DECL_PART_OPT', 'start_command'): ['ε'],
     ('VAR_DECL_STMT', 'int'): ['TYPE', 'L_ID', 'semicolon'],
     ('VAR_DECL_STMT', 'boolean'): ['TYPE', 'L_ID', 'semicolon'],
-    
-    # --- SINC ADICIONADOS PARA VAR_DECL_STMT ---
-    # FOLLOW(VAR_DECL_STMT) inclui {int, boolean (já são produções), procedure, start_command}
     ('VAR_DECL_STMT', 'procedure'): False,
     ('VAR_DECL_STMT', 'start_command'): False,
-
     ('TYPE', 'int'): ['int'],
     ('TYPE', 'boolean'): ['boolean'],
     ('L_ID', 'identifier'): ['identifier', 'L_ID_MORE'],
@@ -45,25 +38,11 @@ parsing_table = {
     ('L_ID_MORE', 'execute_conditional'): ['ε'],
     ('L_ID_MORE', 'execute_loop'): ['ε'],
     ('L_ID_MORE', 'otherwise_conditional'): ['ε'],
-    # ('L_ID_TAIL', 'comma'): ['comma', 'L_ID'], # Removido pois L_ID_MORE substitui
-    # ('L_ID_TAIL', 'colon'): ['ε'], # Removido pois L_ID_MORE substitui
-    
     ('D_SUB_P_OPT', 'procedure'): ['D_PROC', 'semicolon', 'D_SUB_P_OPT'],
     ('D_SUB_P_OPT', 'start_command'): ['ε'], 
-    # --- SINC ADICIONADO PARA D_SUB_P_OPT ---
-    # Se D_SUB_P_OPT vir 'dot' e não tiver produção, sincronizar.
-    # FOLLOW(D_SUB_P_OPT) inclui o que segue <B> se <C_COMP> for ε, ou seja, 'dot'.
-    # No entanto, <C_COMP> não pode ser ε. FOLLOW(D_SUB_P_OPT) é {start_command}.
-    # O erro "inesperado 'dot' ... D_SUB_P_OPT" sugere que o parser chegou lá
-    # de forma errada. Mas para robustez, se ele chegar lá, sincronizar.
     ('D_SUB_P_OPT', 'dot'): False,
-
-
     ('D_PROC', 'procedure'): ['procedure', 'identifier', 'P_FORM_OPT', 'semicolon', 'B'],
-    # --- SINC ADICIONADO PARA D_PROC ---
-    # FOLLOW(D_PROC) inclui 'semicolon' (se houver outro D_PROC) ou o FOLLOW de D_SUB_P_OPT {start_command}
-    ('D_PROC', 'start_command'): False, # Se um D_PROC falhar, tentar pular para o begin
-
+    ('D_PROC', 'start_command'): False,
     ('P_FORM_OPT', 'right_parenteses'): ['P_FORM'],
     ('P_FORM_OPT', 'semicolon'): ['ε'], 
     ('P_FORM', 'right_parenteses'): ['right_parenteses', 'S_P_FORM_LIST', 'left_parenteses'],
@@ -83,20 +62,15 @@ parsing_table = {
     ('CMD_LIST', 'start_command'): ['CMD', 'CMD_TAIL'],
     ('CMD_LIST', 'conditional'): ['CMD', 'CMD_TAIL'],
     ('CMD_LIST', 'loop'): ['CMD', 'CMD_TAIL'],
-    ('CMD_LIST', 'end_command'): ['ε'], # Já era ['ε'], não 'False'
+    ('CMD_LIST', 'end_command'): ['ε'],
     ('CMD_TAIL', 'semicolon'): ['semicolon', 'CMD', 'CMD_TAIL'],
     ('CMD_TAIL', 'end_command'): ['ε'], 
     ('CMD', 'identifier'): ['identifier', 'ID_CMD'],
     ('CMD', 'start_command'): ['C_COMP'],
     ('CMD', 'conditional'): ['C_COND'],
     ('CMD', 'loop'): ['C_REP'],
-
-    # --- SINC ADICIONADOS PARA CMD ---
-    # FOLLOW(CMD) inclui {semicolon, end_command, otherwise_conditional (do else_opt)}
-    ('CMD', 'semicolon'): False, # Se um CMD falha e o próximo é ';', descarta o CMD e continua
-    ('CMD', 'end_command'): False, # Se um CMD falha e o próximo é 'end', descarta o CMD
-                                   # ('otherwise_conditional' já é produção de NO_PAREN_TAIL ou ELSE_OPT)
-
+    ('CMD', 'semicolon'): False,
+    ('CMD', 'end_command'): False,
     ('ID_CMD', 'right_parenteses'): ['right_parenteses', 'L_EXP_OPT', 'left_parenteses', 'ASSIGN_OPT'],
     ('ID_CMD', 'assignment_operator'): ['NO_PAREN_TAIL'],
     ('ID_CMD', 'semicolon'): ['NO_PAREN_TAIL'],

@@ -1,0 +1,17 @@
+Não-Terminal,program,identifier,semicolon,dot,int,boolean,procedure,start_command,comma,colon,left_parenteses,right_parenteses,variable
+PG,"program identifier semicolon B dot",,,,,,,,,,,,
+B,,,,,"VAR_DECL_PART_OPT D_SUB_P_OPT C_COMP","VAR_DECL_PART_OPT D_SUB_P_OPT C_COMP","VAR_DECL_PART_OPT D_SUB_P_OPT C_COMP","VAR_DECL_PART_OPT D_SUB_P_OPT C_COMP",,,,,
+VAR_DECL_PART_OPT,,,,,"VAR_DECL_STMT VAR_DECL_PART_OPT","VAR_DECL_STMT VAR_DECL_PART_OPT",ε,ε,,,,
+VAR_DECL_STMT,,,,,TYPE L_ID semicolon,TYPE L_ID semicolon,,,,,,,
+TYPE,,,,,int,boolean,,,,,,,
+L_ID,,"identifier L_ID_MORE",,,,,,,,,,,
+L_ID_MORE,,,ε,,,,,,ε,,,,
+D_SUB_P_OPT,,,,,,,ε,ε,,,,
+D_PROC,,,,,,,"procedure identifier P_FORM_OPT semicolon B",,,,,,,
+P_FORM_OPT,,,ε,,,,,,,,P_FORM,,
+P_FORM,,,,,,,,,,,,"right_parenteses S_P_FORM_LIST left_parenteses",
+S_P_FORM_LIST,,"S_P_FORM_LINE S_P_FORM_LIST",,,,,,,,,ε,,,,"S_P_FORM_LINE S_P_FORM_LIST"
+S_P_FORM_LINE,,"S_P_FORM semicolon_opt",,,,,,,,,,,,"S_P_FORM semicolon_opt"
+semicolon_opt,,,semicolon,,,,,,,,ε,,,
+S_P_FORM,,"VAR_OPT L_ID colon TYPE",,,,,,,,,,,,"VAR_OPT L_ID colon TYPE"
+VAR_OPT,,"ε",,,,,,,,,,,,variable

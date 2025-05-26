@@ -5,6 +5,7 @@ from flask_cors import CORS
 from utils import find_file
 from sintatico import SyntacticAnalyzer
 from tabela import get_table
+from follow_sets import get_follow_set
 
 
 app = Flask(__name__)
@@ -25,7 +26,7 @@ def enviar_conteudo():
         if not conteudo:
             return jsonify({'error': 'Conteúdo não fornecido'}), 400
         
-        analyser = SyntacticAnalyzer(get_table())
+        analyser = SyntacticAnalyzer(get_table(), get_follow_set())
         errors = analyser.parse(lexico.table)
         
         return jsonify({'message': 'Conteúdo processado com sucesso', 'tabela':lexico.table, 'sintatico': errors}), 200

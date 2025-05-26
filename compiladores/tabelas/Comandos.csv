@@ -1,0 +1,11 @@
+Não-Terminal,identifier,semicolon,start_command,end_command,right_parenteses,assignment_operator,otherwise_conditional,conditional,loop
+C_COMP,,,start_command CMD_LIST end_command,,,,,,
+CMD_LIST,CMD CMD_TAIL,,CMD CMD_TAIL,ε,,,,,CMD CMD_TAIL,CMD CMD_TAIL
+CMD_TAIL,,semicolon CMD CMD_TAIL,,ε,,,,,,
+CMD,"identifier ID_CMD",,C_COMP,,,,,,C_COND,C_REP
+ID_CMD,"NO_PAREN_TAIL",ε,,"NO_PAREN_TAIL","right_parenteses L_EXP_OPT left_parenteses ASSIGN_OPT","NO_PAREN_TAIL",NO_PAREN_TAIL,,
+NO_PAREN_TAIL,,ε,,ε,,assignment_operator EXP,ε,,
+ASSIGN_OPT,,ε,,ε,,"assignment_operator EXP",ε,,
+C_COND,,,,,,,,,conditional EXP execute_conditional CMD ELSE_OPT,
+ELSE_OPT,,ε,,ε,,,,ε,,
+C_REP,,,,,,,,,,loop EXP execute_loop CMD

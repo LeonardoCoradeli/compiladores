@@ -1,0 +1,43 @@
+Não-Terminal,program,identifier,semicolon,dot,int,boolean,procedure,start_command,comma,colon,assignment_operator,plus,minus,multiply,divide,or,and,equals,not_equals,lt,lte,gt,gte,left_parenteses,right_parenteses,end_command,execute_conditional,execute_loop,otherwise_conditional,variable,conditional,loop,integer,real,true,false,not
+PG,"program identifier semicolon B dot",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+B,,,,VAR_DECL_PART_OPT D_SUB_P_OPT C_COMP,VAR_DECL_PART_OPT D_SUB_P_OPT C_COMP,VAR_DECL_PART_OPT D_SUB_P_OPT C_COMP,VAR_DECL_PART_OPT D_SUB_P_OPT C_COMP,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+VAR_DECL_PART_OPT,,,,,"VAR_DECL_STMT VAR_DECL_PART_OPT","VAR_DECL_STMT VAR_DECL_PART_OPT",ε,ε,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+VAR_DECL_STMT,,,,,TYPE L_ID semicolon,TYPE L_ID semicolon,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+TYPE,,,,,int,boolean,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+TYPE,,,,,int,boolean,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+L_ID,,"identifier L_ID_MORE",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+L_ID_MORE,,,ε,,,,,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,ε,,,,,,,,,
+D_SUB_P_OPT,,,,,,,ε,ε,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+D_PROC,,,,,,,"procedure identifier P_FORM_OPT semicolon B",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+P_FORM_OPT,,,ε,,,,,,,,,,,,,,,,,,,,,,,,P_FORM,,,,,,,,,,,,,
+P_FORM,,,,,,,,,,,,,,,,,,,,,,,,,,"right_parenteses S_P_FORM_LIST left_parenteses",,,,,,,,,,,,,,
+S_P_FORM_LIST,,"S_P_FORM_LINE S_P_FORM_LIST",,,,,,,,,,,,,,,,,,,,,,,ε,,,,,,,,,"S_P_FORM_LINE S_P_FORM_LIST",,,,,,,
+S_P_FORM_LINE,,"S_P_FORM semicolon_opt",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"S_P_FORM semicolon_opt",,,,,,,
+semicolon_opt,,,semicolon,,,,,,,,,,,,,,,,,,,,,,,ε,,,,,,,,,,,,,,
+S_P_FORM,,"VAR_OPT L_ID colon TYPE",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,"VAR_OPT L_ID colon TYPE",,,,,,,
+VAR_OPT,,"ε",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,variable,,,,,,,
+C_COMP,,,,,,,,"start_command CMD_LIST end_command",,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+CMD_LIST,CMD CMD_TAIL,,,,,,"CMD CMD_TAIL",,,,,,,,,,,,,,,,,,,,,,,,ε,,,,CMD CMD_TAIL,CMD CMD_TAIL,,,,
+CMD_TAIL,,,semicolon CMD CMD_TAIL,,,,,,,,,,,,,,,,,,,,,,,,,,ε,,,,,,,,,,,,,
+CMD,"identifier ID_CMD",,,,,,"C_COMP",,,,,,,,,,,,,,,,,,,,,,,,,,,,C_COND,C_REP,,,,
+ID_CMD,,,"NO_PAREN_TAIL",,,"NO_PAREN_TAIL",,"NO_PAREN_TAIL",,,,,,,,,,,,,,,,,,,,,,"right_parenteses L_EXP_OPT left_parenteses ASSIGN_OPT","NO_PAREN_TAIL",,,"NO_PAREN_TAIL",,,,,,,,
+NO_PAREN_TAIL,,,ε,,,,"assignment_operator EXP",,ε,,,,,,,,,,,,,,,,,,,,,,,ε,,,ε,,,,,,,
+ASSIGN_OPT,,,ε,,,,"assignment_operator EXP",,,,,,,,,,,,,,,,,,,,,,,,,ε,,,ε,,,,,,,
+C_COND,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,conditional EXP execute_conditional CMD ELSE_OPT,,,,,,
+ELSE_OPT,,,ε,,,,,,,,,,,,,,,,,,,,,,,,,,,,ε,,,ε,,,,,,,
+C_REP,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,loop EXP execute_loop CMD,,,,,
+L_EXP_OPT,,"L_EXP",,,,,,,,,L_EXP,L_EXP,,,,,,,,,,,,,,,,,,L_EXP,L_EXP,,L_EXP,L_EXP,L_EXP,L_EXP
+L_EXP,,"EXP L_EXP_TAIL",,,,,,,,,EXP L_EXP_TAIL,EXP L_EXP_TAIL,,,,,,,,,,,,,,,,,,EXP L_EXP_TAIL,EXP L_EXP_TAIL,,EXP L_EXP_TAIL,EXP L_EXP_TAIL,EXP L_EXP_TAIL,EXP L_EXP_TAIL
+L_EXP_TAIL,,,,,,,ε,,,,,,,,,,,,,,,,,,,,,,ε,,,,,,,,,,,,,,
+EXP,,"EXP_S EXP_TAIL",,,,,,,,,EXP_S EXP_TAIL,EXP_S EXP_TAIL,,,,,,,,,,,,,,,,,,EXP_S EXP_TAIL,EXP_S EXP_TAIL,,EXP_S EXP_TAIL,EXP_S EXP_TAIL,EXP_S EXP_TAIL,EXP_S EXP_TAIL
+EXP_TAIL,,,ε,,,,,"ε",,,,,,"REL EXP_S","REL EXP_S","REL EXP_S","REL EXP_S","REL EXP_S","REL EXP_S",ε,,,ε,ε,"ε",,,,,,,,
+REL,,,,,,,,,,,,,,,"equals",not_equals,lt,lte,gt,gte,,,,,,,,,,,,,,,,
+EXP_S,,"TERM_OPT_SIGN TERM TERM_TAIL",,,,,,,,,TERM_OPT_SIGN TERM TERM_TAIL,TERM_OPT_SIGN TERM TERM_TAIL,,,,,,,,,,,,,,,,,,TERM_OPT_SIGN TERM TERM_TAIL,TERM_OPT_SIGN TERM TERM_TAIL,,TERM_OPT_SIGN TERM TERM_TAIL,TERM_OPT_SIGN TERM TERM_TAIL,TERM_OPT_SIGN TERM TERM_TAIL,TERM_OPT_SIGN TERM TERM_TAIL
+TERM_OPT_SIGN,,ε,,,,,,,,,plus,minus,,,,,,,,,,,,,,,,,,ε,,,,ε,ε,ε,ε,ε
+TERM_TAIL,,,ε,,,,,"ε",,,"ADD_OP TERM TERM_TAIL","ADD_OP TERM TERM_TAIL",,,"ADD_OP TERM TERM_TAIL",,ε,ε,ε,ε,ε,ε,ε,,,ε,ε,"ε",,,,,,,,
+ADD_OP,,,,,,,,,,,plus,minus,,or,,,,,,,,,,,,,,,,,,,,,,,,,,,
+TERM,,"FAT FAT_TAIL",,,,,,,,,,,,,,,,,,,,,,,,,,,,FAT FAT_TAIL,FAT FAT_TAIL,FAT FAT_TAIL,FAT FAT_TAIL,FAT FAT_TAIL
+FAT_TAIL,,,ε,,,,,"ε",,,"ε","ε","MULT_OP FAT FAT_TAIL","MULT_OP FAT FAT_TAIL","MULT_OP FAT FAT_TAIL","MULT_OP FAT FAT_TAIL",ε,ε,ε,ε,ε,ε,ε,,,ε,ε,"ε",,,,,,,,
+MULT_OP,,,,,,,,,,,,multiply,divide,and,,,,,,,,,,,,,,,,,,,,,,,,,,
+FAT,,"identifier VAR_ACCESS",,,,,,,,,,,,,,,,,,,,,,,,,,,"right_parenteses EXP left_parenteses",,,,,integer,real,true,false,"not FAT"
+VAR_ACCESS,,,ε,,,,,"ε",,"ε","ε","ε","ε","ε","ε","ε","ε","ε","ε","ε","ε",ε,,,ε,ε,"ε",,,,,,,,

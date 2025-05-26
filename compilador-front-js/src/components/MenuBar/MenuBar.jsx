@@ -24,7 +24,10 @@ export default function MenuBar({ menus, onToggle, showDeclVars, setShowDeclVars
                     <span onClick={() => setShowDeclVars(v => !v)} className="submenu-label">Sintático</span>
                     {showDeclVars && (
                       <div className="subnested">
-                        <div className="submenu-item" onClick={() => onAction('Declaracao de variaveis')}>Declaração de variáveis</div>
+                        <div className="submenu-item" onClick={() => onAction('Programa')}>Programa e Declarações</div>
+                        <div className="submenu-item" onClick={() => onAction('Comandos')}>Comandos</div>
+                        <div className="submenu-item" onClick={() => onAction('Expressoes')}>Expressões</div>
+                        <div className="submenu-item" onClick={() => onAction('Completo')}>Tabela Completa</div>
                       </div>
                     )}
                   </div>
