@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify
 from alfabeto import obter_tokens
 from lexico import AnaliseLexica
-from sintatico import Grammar,Parser, ParseError
 from flask_cors import CORS
 from utils import find_file
+from sintatico import SyntacticAnalyzer
+from tabela import get_table
 
 
 app = Flask(__name__)
@@ -24,16 +25,10 @@ def enviar_conteudo():
         if not conteudo:
             return jsonify({'error': 'Conteúdo não fornecido'}), 400
         
-        grammar = Grammar()
-        parser = Parser(grammar)
-
-        parser.parse(lexico.table['token'])
+        analyser = SyntacticAnalyzer(get_table())
+        errors = analyser.parse(lexico.table)
         
-        return jsonify({'message': 'Conteúdo processado com sucesso', 'tabela':lexico.table, 'sintatico': "Analise Sintatica concluida"}), 200
-    except ParseError as e:
-        return jsonify({'message': 'Conteúdo processado com sucesso', 
-                        'tabela':lexico.table, 
-                        'sintatico': f'Esperado: {e.expected}, encontrado: {e.found}, posição: {e.position}'}), 200
+        return jsonify({'message': 'Conteúdo processado com sucesso', 'tabela':lexico.table, 'sintatico': errors}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

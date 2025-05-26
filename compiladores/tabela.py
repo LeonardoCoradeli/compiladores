@@ -1,0 +1,166 @@
+# Tabela de Análise Sintática Preditiva (LL(1)) - VERSÃO COM MAIS SINC
+# Baseada na sua última tabela, adicionando entradas 'False' (sinc)
+parsing_table = {
+    # --- Entradas existentes da sua tabela ---
+    ('PG', 'program'): ['program', 'identifier', 'semicolon', 'B', 'dot'],
+    ('B', 'int'): ['VAR_DECL_PART_OPT', 'D_SUB_P_OPT', 'C_COMP'],
+    ('B', 'boolean'): ['VAR_DECL_PART_OPT', 'D_SUB_P_OPT', 'C_COMP'],
+    ('B', 'procedure'): ['VAR_DECL_PART_OPT', 'D_SUB_P_OPT', 'C_COMP'],
+    ('B', 'start_command'): ['VAR_DECL_PART_OPT', 'D_SUB_P_OPT', 'C_COMP'],
+    ('B', 'dot'): False, # Sinc existente
+    ('VAR_DECL_PART_OPT', 'int'): ['VAR_DECL_STMT', 'VAR_DECL_PART_OPT'],
+    ('VAR_DECL_PART_OPT', 'boolean'): ['VAR_DECL_STMT', 'VAR_DECL_PART_OPT'],
+    ('VAR_DECL_PART_OPT', 'procedure'): ['ε'],
+    ('VAR_DECL_PART_OPT', 'start_command'): ['ε'],
+    ('VAR_DECL_STMT', 'int'): ['TYPE', 'L_ID', 'semicolon'],
+    ('VAR_DECL_STMT', 'boolean'): ['TYPE', 'L_ID', 'semicolon'],
+    
+    # --- SINC ADICIONADOS PARA VAR_DECL_STMT ---
+    # FOLLOW(VAR_DECL_STMT) inclui {int, boolean (já são produções), procedure, start_command}
+    ('VAR_DECL_STMT', 'procedure'): False,
+    ('VAR_DECL_STMT', 'start_command'): False,
+
+    ('TYPE', 'int'): ['int'],
+    ('TYPE', 'boolean'): ['boolean'],
+    ('L_ID', 'identifier'): ['identifier', 'L_ID_MORE'],
+    ('L_ID_MORE', 'comma'): ['comma', 'identifier', 'L_ID_MORE'],
+    ('L_ID_MORE', 'colon'): ['ε'],
+    ('L_ID_MORE', 'semicolon'): ['ε'],
+    ('L_ID_MORE', 'assignment_operator'): ['ε'],
+    ('L_ID_MORE', 'plus'): ['ε'],
+    ('L_ID_MORE', 'minus'): ['ε'],
+    ('L_ID_MORE', 'multiply'): ['ε'],
+    ('L_ID_MORE', 'divide'): ['ε'],
+    ('L_ID_MORE', 'or'): ['ε'],
+    ('L_ID_MORE', 'and'): ['ε'],
+    ('L_ID_MORE', 'equals'): ['ε'],
+    ('L_ID_MORE', 'not_equals'): ['ε'],
+    ('L_ID_MORE', 'lt'): ['ε'],
+    ('L_ID_MORE', 'lte'): ['ε'],
+    ('L_ID_MORE', 'gt'): ['ε'],
+    ('L_ID_MORE', 'gte'): ['ε'],
+    ('L_ID_MORE', 'left_parenteses'): ['ε'],
+    ('L_ID_MORE', 'right_parenteses'): ['ε'],
+    ('L_ID_MORE', 'end_command'): ['ε'],
+    ('L_ID_MORE', 'execute_conditional'): ['ε'],
+    ('L_ID_MORE', 'execute_loop'): ['ε'],
+    ('L_ID_MORE', 'otherwise_conditional'): ['ε'],
+    # ('L_ID_TAIL', 'comma'): ['comma', 'L_ID'], # Removido pois L_ID_MORE substitui
+    # ('L_ID_TAIL', 'colon'): ['ε'], # Removido pois L_ID_MORE substitui
+    
+    ('D_SUB_P_OPT', 'procedure'): ['D_PROC', 'semicolon', 'D_SUB_P_OPT'],
+    ('D_SUB_P_OPT', 'start_command'): ['ε'], 
+    # --- SINC ADICIONADO PARA D_SUB_P_OPT ---
+    # Se D_SUB_P_OPT vir 'dot' e não tiver produção, sincronizar.
+    # FOLLOW(D_SUB_P_OPT) inclui o que segue <B> se <C_COMP> for ε, ou seja, 'dot'.
+    # No entanto, <C_COMP> não pode ser ε. FOLLOW(D_SUB_P_OPT) é {start_command}.
+    # O erro "inesperado 'dot' ... D_SUB_P_OPT" sugere que o parser chegou lá
+    # de forma errada. Mas para robustez, se ele chegar lá, sincronizar.
+    ('D_SUB_P_OPT', 'dot'): False,
+
+
+    ('D_PROC', 'procedure'): ['procedure', 'identifier', 'P_FORM_OPT', 'semicolon', 'B'],
+    # --- SINC ADICIONADO PARA D_PROC ---
+    # FOLLOW(D_PROC) inclui 'semicolon' (se houver outro D_PROC) ou o FOLLOW de D_SUB_P_OPT {start_command}
+    ('D_PROC', 'start_command'): False, # Se um D_PROC falhar, tentar pular para o begin
+
+    ('P_FORM_OPT', 'right_parenteses'): ['P_FORM'],
+    ('P_FORM_OPT', 'semicolon'): ['ε'], 
+    ('P_FORM', 'right_parenteses'): ['right_parenteses', 'S_P_FORM_LIST', 'left_parenteses'],
+    ('S_P_FORM_LIST', 'variable'): ['S_P_FORM_LINE', 'S_P_FORM_LIST'],
+    ('S_P_FORM_LIST', 'identifier'): ['S_P_FORM_LINE', 'S_P_FORM_LIST'],
+    ('S_P_FORM_LIST', 'left_parenteses'): ['ε'],
+    ('S_P_FORM_LINE', 'variable'): ['S_P_FORM', 'semicolon_opt'],
+    ('S_P_FORM_LINE', 'identifier'): ['S_P_FORM', 'semicolon_opt'],
+    ('semicolon_opt', 'semicolon'): ['semicolon'],
+    ('semicolon_opt', 'left_parenteses'): ['ε'],
+    ('S_P_FORM', 'variable'): ['VAR_OPT', 'L_ID', 'colon', 'TYPE'],
+    ('S_P_FORM', 'identifier'): ['VAR_OPT', 'L_ID', 'colon', 'TYPE'],
+    ('VAR_OPT', 'variable'): ['variable'],
+    ('VAR_OPT', 'identifier'): ['ε'], 
+    ('C_COMP', 'start_command'): ['start_command', 'CMD_LIST', 'end_command'],
+    ('CMD_LIST', 'identifier'): ['CMD', 'CMD_TAIL'],
+    ('CMD_LIST', 'start_command'): ['CMD', 'CMD_TAIL'],
+    ('CMD_LIST', 'conditional'): ['CMD', 'CMD_TAIL'],
+    ('CMD_LIST', 'loop'): ['CMD', 'CMD_TAIL'],
+    ('CMD_LIST', 'end_command'): ['ε'], # Já era ['ε'], não 'False'
+    ('CMD_TAIL', 'semicolon'): ['semicolon', 'CMD', 'CMD_TAIL'],
+    ('CMD_TAIL', 'end_command'): ['ε'], 
+    ('CMD', 'identifier'): ['identifier', 'ID_CMD'],
+    ('CMD', 'start_command'): ['C_COMP'],
+    ('CMD', 'conditional'): ['C_COND'],
+    ('CMD', 'loop'): ['C_REP'],
+
+    # --- SINC ADICIONADOS PARA CMD ---
+    # FOLLOW(CMD) inclui {semicolon, end_command, otherwise_conditional (do else_opt)}
+    ('CMD', 'semicolon'): False, # Se um CMD falha e o próximo é ';', descarta o CMD e continua
+    ('CMD', 'end_command'): False, # Se um CMD falha e o próximo é 'end', descarta o CMD
+                                   # ('otherwise_conditional' já é produção de NO_PAREN_TAIL ou ELSE_OPT)
+
+    ('ID_CMD', 'right_parenteses'): ['right_parenteses', 'L_EXP_OPT', 'left_parenteses', 'ASSIGN_OPT'],
+    ('ID_CMD', 'assignment_operator'): ['NO_PAREN_TAIL'],
+    ('ID_CMD', 'semicolon'): ['NO_PAREN_TAIL'],
+    ('ID_CMD', 'end_command'): ['NO_PAREN_TAIL'],
+    ('ID_CMD', 'otherwise_conditional'): ['NO_PAREN_TAIL'],
+    ('NO_PAREN_TAIL', 'assignment_operator'): ['assignment_operator', 'EXP'],
+    ('NO_PAREN_TAIL', 'semicolon'): ['ε'],
+    ('NO_PAREN_TAIL', 'end_command'): ['ε'],
+    ('NO_PAREN_TAIL', 'otherwise_conditional'): ['ε'],
+    ('ASSIGN_OPT', 'assignment_operator'): ['assignment_operator', 'EXP'],
+    ('ASSIGN_OPT', 'semicolon'): ['ε'],
+    ('ASSIGN_OPT', 'end_command'): ['ε'],
+    ('ASSIGN_OPT', 'otherwise_conditional'): ['ε'],
+    ('C_COND', 'conditional'): ['conditional', 'EXP', 'execute_conditional', 'CMD', 'ELSE_OPT'],
+    ('ELSE_OPT', 'otherwise_conditional'): ['otherwise_conditional', 'CMD'],
+    ('ELSE_OPT', 'semicolon'): ['ε'],
+    ('ELSE_OPT', 'end_command'): ['ε'],
+    ('C_REP', 'loop'): ['loop', 'EXP', 'execute_loop', 'CMD'],
+    ('L_EXP_OPT', 'plus'): ['L_EXP'], ('L_EXP_OPT', 'minus'): ['L_EXP'], ('L_EXP_OPT', 'identifier'): ['L_EXP'],
+    ('L_EXP_OPT', 'integer'): ['L_EXP'], ('L_EXP_OPT', 'real'): ['L_EXP'], ('L_EXP_OPT', 'true'): ['L_EXP'],
+    ('L_EXP_OPT', 'false'): ['L_EXP'], ('L_EXP_OPT', 'right_parenteses'): ['L_EXP'], ('L_EXP_OPT', 'not'): ['L_EXP'],
+    ('L_EXP_OPT', 'left_parenteses'): ['ε'],
+    ('L_EXP', 'plus'): ['EXP', 'L_EXP_TAIL'], ('L_EXP', 'minus'): ['EXP', 'L_EXP_TAIL'], ('L_EXP', 'identifier'): ['EXP', 'L_EXP_TAIL'],
+    ('L_EXP', 'integer'): ['EXP', 'L_EXP_TAIL'], ('L_EXP', 'real'): ['EXP', 'L_EXP_TAIL'], ('L_EXP', 'true'): ['EXP', 'L_EXP_TAIL'],
+    ('L_EXP', 'false'): ['EXP', 'L_EXP_TAIL'], ('L_EXP', 'right_parenteses'): ['EXP', 'L_EXP_TAIL'], ('L_EXP', 'not'): ['EXP', 'L_EXP_TAIL'],
+    ('L_EXP_TAIL', 'comma'): ['comma', 'L_EXP'], ('L_EXP_TAIL', 'left_parenteses'): ['ε'],
+    ('EXP', 'plus'): ['EXP_S', 'EXP_TAIL'], ('EXP', 'minus'): ['EXP_S', 'EXP_TAIL'], ('EXP', 'identifier'): ['EXP_S', 'EXP_TAIL'],
+    ('EXP', 'integer'): ['EXP_S', 'EXP_TAIL'], ('EXP', 'real'): ['EXP_S', 'EXP_TAIL'], ('EXP', 'true'): ['EXP_S', 'EXP_TAIL'],
+    ('EXP', 'false'): ['EXP_S', 'EXP_TAIL'], ('EXP', 'right_parenteses'): ['EXP_S', 'EXP_TAIL'], ('EXP', 'not'): ['EXP_S', 'EXP_TAIL'],
+    ('EXP_TAIL', 'equals'): ['REL', 'EXP_S'], ('EXP_TAIL', 'not_equals'): ['REL', 'EXP_S'], ('EXP_TAIL', 'lt'): ['REL', 'EXP_S'],
+    ('EXP_TAIL', 'lte'): ['REL', 'EXP_S'], ('EXP_TAIL', 'gt'): ['REL', 'EXP_S'], ('EXP_TAIL', 'gte'): ['REL', 'EXP_S'],
+    ('EXP_TAIL', 'left_parenteses'): ['ε'], ('EXP_TAIL', 'execute_conditional'): ['ε'], ('EXP_TAIL', 'execute_loop'): ['ε'],
+    ('EXP_TAIL', 'comma'): ['ε'], ('EXP_TAIL', 'end_command'): ['ε'], ('EXP_TAIL', 'semicolon'): ['ε'], ('EXP_TAIL', 'otherwise_conditional'): ['ε'],
+    ('REL', 'equals'): ['equals'], ('REL', 'not_equals'): ['not_equals'], ('REL', 'lt'): ['lt'], ('REL', 'lte'): ['lte'], ('REL', 'gt'): ['gt'], ('REL', 'gte'): ['gte'],
+    ('EXP_S', 'plus'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'], ('EXP_S', 'minus'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'],
+    ('EXP_S', 'identifier'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'], ('EXP_S', 'integer'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'],
+    ('EXP_S', 'real'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'], ('EXP_S', 'true'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'],
+    ('EXP_S', 'false'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'], ('EXP_S', 'right_parenteses'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'],
+    ('EXP_S', 'not'): ['TERM_OPT_SIGN', 'TERM', 'TERM_TAIL'],
+    ('TERM_OPT_SIGN', 'plus'): ['plus'], ('TERM_OPT_SIGN', 'minus'): ['minus'], ('TERM_OPT_SIGN', 'identifier'): ['ε'],
+    ('TERM_OPT_SIGN', 'integer'): ['ε'], ('TERM_OPT_SIGN', 'real'): ['ε'], ('TERM_OPT_SIGN', 'true'): ['ε'],
+    ('TERM_OPT_SIGN', 'false'): ['ε'], ('TERM_OPT_SIGN', 'right_parenteses'): ['ε'], ('TERM_OPT_SIGN', 'not'): ['ε'],
+    ('TERM_TAIL', 'plus'): ['ADD_OP', 'TERM', 'TERM_TAIL'], ('TERM_TAIL', 'minus'): ['ADD_OP', 'TERM', 'TERM_TAIL'], ('TERM_TAIL', 'or'): ['ADD_OP', 'TERM', 'TERM_TAIL'],
+    ('TERM_TAIL', 'equals'): ['ε'], ('TERM_TAIL', 'not_equals'): ['ε'], ('TERM_TAIL', 'lt'): ['ε'], ('TERM_TAIL', 'lte'): ['ε'], ('TERM_TAIL', 'gt'): ['ε'], ('TERM_TAIL', 'gte'): ['ε'],
+    ('TERM_TAIL', 'left_parenteses'): ['ε'], ('TERM_TAIL', 'execute_conditional'): ['ε'], ('TERM_TAIL', 'execute_loop'): ['ε'],
+    ('TERM_TAIL', 'comma'): ['ε'], ('TERM_TAIL', 'end_command'): ['ε'], ('TERM_TAIL', 'semicolon'): ['ε'], ('TERM_TAIL', 'otherwise_conditional'): ['ε'],
+    ('ADD_OP', 'plus'): ['plus'], ('ADD_OP', 'minus'): ['minus'], ('ADD_OP', 'or'): ['or'],
+    ('TERM', 'identifier'): ['FAT', 'FAT_TAIL'], ('TERM', 'integer'): ['FAT', 'FAT_TAIL'], ('TERM', 'real'): ['FAT', 'FAT_TAIL'],
+    ('TERM', 'true'): ['FAT', 'FAT_TAIL'], ('TERM', 'false'): ['FAT', 'FAT_TAIL'], ('TERM', 'right_parenteses'): ['FAT', 'FAT_TAIL'], ('TERM', 'not'): ['FAT', 'FAT_TAIL'],
+    ('FAT_TAIL', 'multiply'): ['MULT_OP', 'FAT', 'FAT_TAIL'], ('FAT_TAIL', 'divide'): ['MULT_OP', 'FAT', 'FAT_TAIL'], ('FAT_TAIL', 'and'): ['MULT_OP', 'FAT', 'FAT_TAIL'],
+    ('FAT_TAIL', 'plus'): ['ε'], ('FAT_TAIL', 'minus'): ['ε'], ('FAT_TAIL', 'or'): ['ε'], ('FAT_TAIL', 'equals'): ['ε'], ('FAT_TAIL', 'not_equals'): ['ε'], ('FAT_TAIL', 'lt'): ['ε'], ('FAT_TAIL', 'lte'): ['ε'], ('FAT_TAIL', 'gt'): ['ε'], ('FAT_TAIL', 'gte'): ['ε'],
+    ('FAT_TAIL', 'left_parenteses'): ['ε'], ('FAT_TAIL', 'execute_conditional'): ['ε'], ('FAT_TAIL', 'execute_loop'): ['ε'],
+    ('FAT_TAIL', 'comma'): ['ε'], ('FAT_TAIL', 'end_command'): ['ε'], ('FAT_TAIL', 'semicolon'): ['ε'], ('FAT_TAIL', 'otherwise_conditional'): ['ε'],
+    ('MULT_OP', 'multiply'): ['multiply'], ('MULT_OP', 'divide'): ['divide'], ('MULT_OP', 'and'): ['and'],
+    ('FAT', 'identifier'): ['identifier', 'VAR_ACCESS'], ('FAT', 'integer'): ['integer'], ('FAT', 'real'): ['real'],
+    ('FAT', 'true'): ['true'], ('FAT', 'false'): ['false'], ('FAT', 'right_parenteses'): ['right_parenteses', 'EXP', 'left_parenteses'], ('FAT', 'not'): ['not', 'FAT'],
+    ('VAR_ACCESS', 'right_parenteses'): ['right_parenteses', 'EXP', 'left_parenteses'],
+    ('VAR_ACCESS', 'multiply'): ['ε'], ('VAR_ACCESS', 'divide'): ['ε'], ('VAR_ACCESS', 'and'): ['ε'], ('VAR_ACCESS', 'plus'): ['ε'],
+    ('VAR_ACCESS', 'minus'): ['ε'], ('VAR_ACCESS', 'or'): ['ε'], ('VAR_ACCESS', 'equals'): ['ε'], ('VAR_ACCESS', 'not_equals'): ['ε'],
+    ('VAR_ACCESS', 'lt'): ['ε'], ('VAR_ACCESS', 'lte'): ['ε'], ('VAR_ACCESS', 'gt'): ['ε'], ('VAR_ACCESS', 'gte'): ['ε'],
+    ('VAR_ACCESS', 'left_parenteses'): ['ε'], ('VAR_ACCESS', 'execute_conditional'): ['ε'], ('VAR_ACCESS', 'execute_loop'): ['ε'],
+    ('VAR_ACCESS', 'comma'): ['ε'], ('VAR_ACCESS', 'end_command'): ['ε'], ('VAR_ACCESS', 'semicolon'): ['ε'],
+    ('VAR_ACCESS', 'otherwise_conditional'): ['ε'],
+}
+
+def get_table():
+    return parsing_table

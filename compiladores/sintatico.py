@@ -1,94 +1,75 @@
-from tabelas import get_table
-
-class Grammar:
-    def __init__(self):
-        self.nonterminals = [
-            'PDV', 'PDV′', 'DV', 'T', 'LI', 'LI′',
-            'PDS', 'DP', 'PF_opt', 'PF', 'SPF_list', 'SPF_list′', 'SPF', 'I'
-        ]
-        self.terminals = [
-            'boolean', 'int', 'identifier', 'procedure',
-            'right_parenteses', 'left_parenteses', 'variable',
-            'colon', 'semicolon', 'comma', '$'
-        ]
-        self.start_symbol = 'PDV'
-        self.epsilon = 'ε'
-        self.parse_table = get_table()
-    
-    
-    def get_production(self, nonterminal: str, terminal: str):
-        return self.parse_table.get((nonterminal, terminal))
-    
-    def is_terminal(self, symbol: str) -> bool:
-        if symbol is None or symbol == self.epsilon or symbol == '':
-            return False
-        return symbol not in self.nonterminals
-
-class ParseError(Exception):
-    def __init__(self, message: str, position: int = None, expected=None, found: str = None, 
-                 stack_top: str = None, input_line: str = None):
-        super().__init__(message)
-        self.position = position
-        self.expected = expected
-        self.found = found
-        self.stack_top = stack_top
-        self.input_line = input_line
-
-class Parser:
-    def __init__(self, grammar: Grammar):
-        self.grammar = grammar
+class SyntacticAnalyzer:
+    def __init__(self, parsing_table):
+        self.table = parsing_table
+        self.non_terminals = {key[0] for key in self.table.keys()}
+        self.errors = []
         self.stack = []
-    
-    def parse(self, tokens: list) -> bool:
-        tokens = list(tokens)
-        if not tokens or tokens[-1] != '$':
-            tokens.append('$')
-        self.stack = ['$']
-        self.stack.append(self.grammar.start_symbol)
-        index = 0
-        input_line_str = " ".join(tokens)
-        
-        while self.stack:
-            top = self.stack.pop()
-            current_token = tokens[index] if index < len(tokens) else None
-            
-            if top == '$':
-                if current_token == '$':
-                    return True
-                else:
-                    message = f"Erro: entrada não consumida completamente. Restante: {tokens[index:]}."
-                    raise ParseError(message, position=index, expected='fim da entrada', 
-                                     found=current_token, stack_top=top, input_line=input_line_str)
-            
-            if self.grammar.is_terminal(top):
-                if top == current_token:
-                    index += 1
-                    continue
-                else:
-                    message = (f"Erro de sintaxe na posição {index}: "
-                               f"esperado token '{top}', mas encontrado '{current_token}'.")
-                    raise ParseError(message, position=index, expected=top, 
-                                     found=current_token, stack_top=top, input_line=input_line_str)
-            
-            else:
-                production = self.grammar.get_production(top, current_token)
-                if production is None:
-                    expected_tokens = [term for (nt, term), prod in self.grammar.parse_table.items() if nt == top and term]
-                    expected_list_str = ", ".join(f"'{tok}'" for tok in expected_tokens)
-                    message = (f"Erro de sintaxe na posição {index}: "
-                               f"No contexto de <{top}>, token inesperado '{current_token}'. "
-                               f"Esperado um dos: {expected_list_str}.")
-                    raise ParseError(message, position=index, expected=expected_tokens, 
-                                     found=current_token, stack_top=top, input_line=input_line_str)
-                for symbol in reversed(production):
-                    if symbol == '' or symbol == self.grammar.epsilon:
-                        continue
-                    self.stack.append(symbol)
+        self.tokens = []
+        self.index = 0
 
-                continue
+    def parse(self, token_table):
+        processed_tokens = []
+        num_tokens = len(token_table['token'])
+        for i in range(num_tokens):
+            processed_tokens.append({
+                'type': token_table['token'][i],
+                'value': token_table['lexema'][i],
+                'line': token_table['linha'][i]
+            })
         
-        if index < len(tokens):
-            message = f"Erro: tokens restantes após análise: {tokens[index:]}."
-            raise ParseError(message, position=index, expected=None, found=None, 
-                             stack_top=None, input_line=input_line_str)
-        return True
+        self.tokens = processed_tokens
+        self.stack = ['$', 'PG'] 
+        self.index = 0
+        self.errors = []
+        
+        last_line = self.tokens[-1]['line'] if self.tokens else 1
+        self.tokens.append({'type': '$', 'value': 'EOF', 'line': last_line})
+
+        while self.stack and self.stack[-1] != '$':
+            stack_top = self.stack[-1]
+            if self.index >= len(self.tokens):
+                self.errors.append(f"Erro: Fim inesperado do arquivo. Esperando por '{stack_top}'.")
+                break
+                
+            current_token = self.tokens[self.index]
+
+            if stack_top in self.non_terminals:
+                self._handle_non_terminal(stack_top, current_token)
+            else:
+                self._handle_terminal(stack_top, current_token)
+
+        if not self.errors and self.stack[-1] == '$' and self.tokens[self.index]['type'] != '$':
+             self.errors.append(f"Erro na linha {self.tokens[self.index]['line']}: Código extra encontrado ('{self.tokens[self.index]['value']}') após o final do programa.")
+
+        return self.errors
+
+    def _handle_terminal(self, stack_top, current_token):
+        """Processa o caso em que o topo da pilha é um terminal."""
+        if stack_top == current_token['type']:
+            self.stack.pop()
+            self.index += 1
+        else:
+            error_msg = f"Erro na linha {current_token['line']}: Era esperado o token '{stack_top}', mas foi encontrado '{current_token['type']}' ('{current_token['value']}')."
+            self.errors.append(error_msg)
+            self.stack.pop()
+
+    def _handle_non_terminal(self, stack_top, current_token):
+        key = (stack_top, current_token['type'])
+        rule = self.table.get(key)
+
+        if rule and rule != False:
+            self.stack.pop()
+            if rule != ['ε']:
+                for symbol in reversed(rule):
+                    self.stack.append(symbol)
+        else:
+            error_msg = f"Erro na linha {current_token['line']}: Token inesperado '{current_token['type']}' ('{current_token['value']}') durante a análise da estrutura '{stack_top}'."
+            self.errors.append(error_msg)
+            while self.table.get((stack_top, self.tokens[self.index]['type'])) is None:
+                self.index += 1
+                if self.tokens[self.index]['type'] == '$':
+                    self.stack.clear()
+                    self.stack.append('$')
+                    return
+            if self.table.get((stack_top, self.tokens[self.index]['type'])) is False:
+                self.stack.pop()
