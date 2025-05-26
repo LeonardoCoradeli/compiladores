@@ -3,8 +3,7 @@ import './Panel.css';
 
 export default function Panel({ height, onStartResize, table, sintatico }) {
   const hasLexicalErrors = table?.erro?.linha && table.erro.linha.length > 0;
-  const hasSyntacticError = sintatico?.includes('Esperado');
-  const hasSyntacticResult = sintatico && !hasSyntacticError;
+  const hasSyntacticError = sintatico.length > 0;
 
   return (
     <div className="resizable-panel" style={{ height }}>
@@ -26,12 +25,20 @@ export default function Panel({ height, onStartResize, table, sintatico }) {
         )}
         {hasSyntacticError && (
           <div>
-            <h3>Erro Sintático Encontrado:</h3>
-            <p>{sintatico}</p>
+            <h3>Erros Sintáticos Encontrados:</h3>
+            <ul>
+              {sintatico.map((error, i) => (
+                <li key={i}>
+                  {error}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
-        {hasSyntacticResult && (
-          <p>{sintatico}</p>
+        {!hasLexicalErrors && !hasSyntacticError && (
+          <div>
+            <h3>Sem Erros Encontrados</h3>
+          </div>
         )}
       </div>
     </div>
