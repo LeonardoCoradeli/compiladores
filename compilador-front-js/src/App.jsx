@@ -21,9 +21,9 @@ export default function App() {
   const [activeTabId, setActiveTabId] = useState(tabs[0].id);
   const [table, setTable] = useState(null);
   const [sintatico, setSintatico] = useState(null);
-  const [mensagemSintatico, setMensagemSintatico] = useState('');
   const [csvText, setCsvText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState([]);
 
   const fileInputRef = useRef(null);
   const resizing = useRef(false);
@@ -169,10 +169,8 @@ export default function App() {
   };
   
   const handleRunClick = () => {
-    console.log('Conteudo da Tab:', activeTab.content);
-    const conteudo = adicionarEspacoAntesEDepois(activeTab.content);
-    console.log('Conteúdo enviado:', conteudo);
     setIsLoading(true);
+    setErrors([]);
     fetch('http://localhost:5000/enviar_conteudo', {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
@@ -182,10 +180,26 @@ export default function App() {
       .then(data => {
         setTable(data.tabela);
         setSintatico(data.sintatico);
+        
+        if (data.sintatico && Array.isArray(data.sintatico) && data.sintatico.length > 0) {
+          const formattedErrors = data.sintatico.map(error => ({
+            line: error[0],        
+            column: 0,             
+            message: error[1]     
+          }));
+          console.log('Erros Sintáticos:', formattedErrors);
+          setErrors(formattedErrors);
+        } else {
+          setErrors([]);
+        }
+        
         setPanelVisible(true);
         setIsLoading(false);
       })
-      .catch(err => console.error('Erro ao executar o código:', err));
+      .catch(err => {
+        console.error('Erro ao executar o código:', err);
+        setIsLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -236,6 +250,7 @@ export default function App() {
             <Editor
               value={activeTab.content}
               onChange={text => updateTabContent(activeTabId, text)}
+              errors={errors}
             />
             <button className="run-button" onClick={handleRunClick}>▶</button>
           </div>

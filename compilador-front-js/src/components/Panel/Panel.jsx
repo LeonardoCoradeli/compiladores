@@ -28,8 +28,8 @@ export default function Panel({ height, onStartResize, table, sintatico }) {
             <h3>Erros Sintáticos Encontrados:</h3>
             <ul>
               {sintatico.map((error, i) => (
-                <li key={i}>
-                  {error}
+                <li style = {{ padding: "1px" }} key={i}>
+                  Linha {error[0]}: {error[1]}
                 </li>
               ))}
             </ul>
