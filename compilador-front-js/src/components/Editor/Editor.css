@@ -1,8 +1,8 @@
 .editor-container {
   display: flex;
   flex-direction: column;
-  height: 82vh;
-  width: 97vw;
+  height: 100%;
+  width: 100%;
   margin: 0;
   padding: 0;
 }
@@ -24,4 +24,52 @@
   flex-grow: 1;
   width: 100%;
   height: 100%;
+}
+
+.editor-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* Marker para destacar linhas de erro */
+.error-marker {
+  background-color: rgba(255, 0, 0, 0.15) !important;
+  border-left: 4px solid #ff0000 !important;
+  position: absolute !important;
+  z-index: 20 !important;
+}
+
+/* Estilo para anotações de erro */
+.ace_error {
+  background-color: rgba(255, 0, 0, 0.1) !important;
+}
+
+/* Estilo para células da margem com erro */
+.ace_gutter-cell.ace_error {
+  background-color: #ffebee !important;
+  color: #c62828 !important;
+}
+
+/* Tooltip de erro */
+.ace_tooltip {
+  background: #f44336 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 4px !important;
+  padding: 5px 8px !important;
+  font-size: 12px !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+  max-width: 400px !important;
+  word-wrap: break-word !important;
+}
+
+/* Garante que o destaque da linha ativa não sobreponha os erros */
+.ace_active-line {
+  z-index: 10 !important;
+}
+
+/* Força o estilo dos markers de erro */
+.ace_marker-layer .error-marker {
+  background-color: rgba(255, 0, 0, 0.15) !important;
+  border-left: 4px solid #ff0000 !important;
 }
