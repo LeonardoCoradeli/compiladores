@@ -6,7 +6,10 @@ export default function CsvTable({ type, tabela }) {
     .trim()
     .split('\n')
     .map(line =>
-      line.split(',').map(cell => cell.trim())
+      line.split(',').map(cell =>
+        cell.replace(/\u00A0/g, '').trim()
+      )
+      
     );
 
   if (rows.length === 0) {
@@ -24,6 +27,8 @@ export default function CsvTable({ type, tabela }) {
     const diff = numHeaders - row.length;
     if (diff > 0) {
       return [...row, ...Array(diff).fill('')];
+    } else if (diff < 0) {
+      return row.slice(0, numHeaders);
     }
     return row;
   });

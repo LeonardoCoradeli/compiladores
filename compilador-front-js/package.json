@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "ace-builds": "^1.40.1",
+    "framer-motion": "^12.16.0",
+    "lucide-react": "^0.513.0",
     "react": "^19.0.0",
     "react-ace": "^14.0.1",
     "react-dom": "^19.0.0"

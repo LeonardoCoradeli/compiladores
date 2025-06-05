@@ -7,6 +7,7 @@ import Panel from './components/Panel/Panel';
 import Editor from './components/Editor/Editor';
 import Table from './components/Table/Table/Table';
 import CsvTable from './components/Table/CsvTable/CsvTable';
+import Popup from './components/Pop-up/Pop-up';
 
 let nextTabId = 1;
 
@@ -24,6 +25,7 @@ export default function App() {
   const [csvText, setCsvText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([]);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const fileInputRef = useRef(null);
   const resizing = useRef(false);
@@ -99,7 +101,11 @@ export default function App() {
       }
       case 'Lexico':
       case 'Léxicos':
-        addTab({ title: 'Tabela Léxicos', type: 'table' });
+        if(!table){
+          setIsPopupOpen(true);
+        }else{
+          addTab({ title: 'Tabela Léxicos', type: 'table' });
+        }
         break;
       case 'Programa':
         addTab({ title: 'Programa', type: 'CsvTable', tableId: 'Programa' });
@@ -108,7 +114,7 @@ export default function App() {
         addTab({ title: 'Comandos', type: 'CsvTable', tableId: 'Comandos' });
         break;
       case 'Expressoes':
-        addTab({ title: 'Expressões', type: 'CsvTable', tableId: 'Expressoes' });
+        addTab({ title: 'Expressoes', type: 'CsvTable', tableId: 'Expressoes' });
         break;
       case 'Completo':
         addTab({ title: 'Completa', type: 'CsvTable', tableId: 'Completo' });
@@ -140,6 +146,7 @@ export default function App() {
   const handleMenuToggle = menu => {
     setMenus(m => ({ ...m, [menu]: !m[menu] }));
     if (menu === 'Tabelas' && menus.Tabelas) setShowDeclVars(false);
+    console.log(menus);
   };
 
   const startResize = () => {
@@ -169,6 +176,10 @@ export default function App() {
   };
   
   const handleRunClick = () => {
+    if(!activeTab.content){
+      setIsPopupOpen(true);
+      return;
+    }
     setIsLoading(true);
     setErrors([]);
     fetch('http://localhost:5000/enviar_conteudo', {
@@ -187,7 +198,6 @@ export default function App() {
             column: 0,             
             message: error[1]     
           }));
-          console.log('Erros Sintáticos:', formattedErrors);
           setErrors(formattedErrors);
         } else {
           setErrors([]);
@@ -275,6 +285,9 @@ export default function App() {
       >
         {panelVisible ? 'Ocultar Painel' : 'Mostrar Painel'}
       </button>
+      <Popup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)}>
+        <p>Antes de executar o compilador escreva um programa em linguagem LALG.</p>
+      </Popup>
     </div>
   );
 }
