@@ -3,6 +3,7 @@ import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-text';
 import 'ace-builds/src-noconflict/theme-github';
 import './Editor.css';
+import './Lalg.mode.register.jsx';
 
 export default function Editor({ value, onChange, errors = [] }) {
   const handleChange = (newValue) => {
@@ -39,7 +40,7 @@ export default function Editor({ value, onChange, errors = [] }) {
   return (
     <div className="editor-container">
       <AceEditor
-        mode="text"
+        mode="lalg"
         theme="github"
         value={value}
         onChange={handleChange}
