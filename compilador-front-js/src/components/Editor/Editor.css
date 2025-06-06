@@ -73,3 +73,34 @@
   background-color: rgba(255, 0, 0, 0.15) !important;
   border-left: 4px solid #ff0000 !important;
 }
+
+/* Paleta harmônica para tokens LALG */
+
+.ace_keyword.ace_control {
+  color: #795da3 !important; /* roxo suave */
+  font-weight: bold;
+}
+
+.ace_constant.ace_language {
+  color: #31849b !important; /* azul petróleo */
+}
+
+.ace_keyword.ace_operator {
+  color: #d73a49 !important; /* vermelho suave */
+}
+
+.ace_keyword.ace_operator.arithmetic {
+  color: #b58900 !important; /* amarelo queimado */
+}
+
+.ace_storage.ace_type {
+  color: #6f42c1 !important; /* roxo escuro */
+}
+
+.ace_constant.ace_numeric {
+  color: #005cc5 !important; /* azul forte */
+}
+
+.ace_identifier {
+  color: #24292e !important; /* preto escuro */
+}
