@@ -3,7 +3,7 @@ from alfabeto import obter_tokens
 from lexico import AnaliseLexica
 from flask_cors import CORS
 from utils import find_file
-from sintatico import SyntacticAnalyzer
+from sintatico import AnalisadorIntegrado
 from tabela import get_table
 from follow_sets import get_follow_set
 
@@ -26,10 +26,31 @@ def enviar_conteudo():
         if not conteudo:
             return jsonify({'error': 'Conteúdo não fornecido'}), 400
         
-        analyser = SyntacticAnalyzer(get_table(), get_follow_set())
-        errors = analyser.parse(lexico.table)
+        # Utiliza o novo analisador integrado
+        analisador = AnalisadorIntegrado(get_table(), get_follow_set())
+        resultado_analise = analisador.analisar(lexico.table)
+
+        print(resultado_analise)
         
-        return jsonify({'message': 'Conteúdo processado com sucesso', 'tabela':lexico.table, 'sintatico': errors}), 200
+        # Formata os erros semânticos para serem serializáveis em JSON,
+        # pois objetos de exceção não são diretamente convertidos.
+        erros_semanticos_json = [
+            {'mensagem': erro.mensagem, 'linha': erro.linha} 
+            for erro in resultado_analise['semantica']
+        ]
+        
+        # Monta a resposta final com os resultados da análise
+        resposta = {
+            'message': 'Conteúdo processado com sucesso',
+            'tabela_lexica': lexico.table,
+            'resultado_analise': {
+                'sintaxe': resultado_analise['sintaxe'],
+                'semantica': erros_semanticos_json,
+                'sucesso': resultado_analise['sucesso']
+            }
+        }
+        
+        return jsonify(resposta), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
