@@ -46,7 +46,7 @@ def enviar_conteudo():
 
         sucesso = not erros_sintaticos and not erros_semanticos  # Sucesso se não houver erros
 
-        print(erros_semanticos_json)
+        
 
         resposta = {
             'message': 'Conteúdo processado com sucesso',
