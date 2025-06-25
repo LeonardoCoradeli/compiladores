@@ -29,24 +29,30 @@ def enviar_conteudo():
         analisador = SyntacticAnalyzer(get_table(), get_follow_set())
         erros_sintaticos = analisador.parse(lexico.table)
 
-        # Montagem dos erros sintáticos em JSON
         erros_sintaticos_json = [
-            {'mensagem': erro[1], 'linha': erro[0]} 
+            {'mensagem': erro[1], 'linha': erro[0]}
             for erro in erros_sintaticos
         ]
 
         # Análise semântica
         analisador_semantico = AnalisadorSemantico()
-        erros_semanticos, tabela_simbolos = analisador_semantico.analisar_tokens(lexico.table)
+        resultado_sem = analisador_semantico.analisar_tokens(lexico.table)
+        erros_semanticos = resultado_sem['erros']
+        tabela_simbolos = resultado_sem['tabelas_de_simbolos']
 
+        print(tabela_simbolos)
+
+        # Os dicionários de erro vêm com chaves 'Linha','Escopo','Mensagem'
         erros_semanticos_json = [
-            {'mensagem': erro.mensagem, 'linha': erro.linha}
+            {
+                'mensagem': erro['Mensagem'],
+                'linha': erro['Linha'],
+                'escopo': erro.get('Escopo')
+            }
             for erro in erros_semanticos
         ]
 
-        sucesso = not erros_sintaticos and not erros_semanticos  # Sucesso se não houver erros
-
-        
+        sucesso = not erros_sintaticos and not erros_semanticos
 
         resposta = {
             'message': 'Conteúdo processado com sucesso',
