@@ -4,7 +4,7 @@ import './MenuBar.css';
 export default function MenuBar({ menus, onToggle, showDeclVars, setShowDeclVars, onAction }) {
   return (
     <header className="header">
-      {['Arquivos', 'Tabelas'].map(menu => (
+      {['Arquivos', 'Tabelas', 'Símbolos'].map(menu => (
         <div
           key={menu}
           className="menu-item"
@@ -17,9 +17,11 @@ export default function MenuBar({ menus, onToggle, showDeclVars, setShowDeclVars
               {menu === 'Arquivos' && ['Salvar arquivo', 'Carregar arquivo', 'Novo Arquivo'].map(item => (
                 <div key={item} className="submenu-item" onClick={() => onAction(item)}>{item}</div>
               ))}
+              
               {menu === 'Tabelas' && (
                 <>
                   <div className="submenu-item" onClick={() => onAction('Lexico')}>Lexico</div>
+                  <div className="submenu-item" onClick={() => onAction('Semantico')}>Semântico</div>
                   <div className="submenu-item nested">
                     <span onClick={() => setShowDeclVars(v => !v)} className="submenu-label">Sintático</span>
                     {showDeclVars && (
@@ -32,6 +34,12 @@ export default function MenuBar({ menus, onToggle, showDeclVars, setShowDeclVars
                     )}
                   </div>
                 </>
+              )}
+              
+              {menu === 'Símbolos' && (
+                <div className="submenu-item" onClick={() => onAction('TabelaSimbolos')}>
+                  Exibir Tabela de Símbolos
+                </div>
               )}
             </div>
           )}

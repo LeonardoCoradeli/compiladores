@@ -12,17 +12,20 @@ import Popup from './components/Pop-up/Pop-up';
 let nextTabId = 1;
 
 export default function App() {
-  const [menus, setMenus] = useState({ Arquivos: false, Tabelas: false });
+  const [menus, setMenus] = useState({ Arquivos: false, Tabelas: false, Símbolos: false });
   const [showDeclVars, setShowDeclVars] = useState(false);
   const [panelVisible, setPanelVisible] = useState(false);
   const [panelHeight, setPanelHeight] = useState(200);
   const [tabs, setTabs] = useState([
-    { id: nextTabId++, title: 'Editor 1', type: 'editor', content: '' }
+    { id: nextTabId++, title: 'Editor 1', type: 'editor', content: '', language: 'lalg' }
   ]);
   const [activeTabId, setActiveTabId] = useState(tabs[0].id);
   const [table, setTable] = useState(null);
   const [sintatico, setSintatico] = useState(null);
+  const [semantico, setSemantico] = useState(null);
   const [csvText, setCsvText] = useState('');
+  const [tabelaSimbolos, setTabelaSimbolos] = useState(null);
+  const [mepaCode, setMepaCode] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState([]);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -70,9 +73,9 @@ export default function App() {
     }
   };
 
-  const addTab = ({ title, type, content = '' }) => {
+  const addTab = ({ title, type, content = '', language = 'lalg', tableData = null }) => {
     const id = nextTabId++;
-    setTabs(ts => [...ts, { id, title, type, content }]);
+    setTabs(ts => [...ts, { id, title, type, content, language, tableData }]);
     setActiveTabId(id);
   };
 
@@ -119,6 +122,44 @@ export default function App() {
       case 'Completo':
         addTab({ title: 'Completa', type: 'CsvTable', tableId: 'Completo' });
         break;
+      case 'Semantico':
+      case 'Semântico':
+        if (!activeTab || !activeTab.content) {
+          setIsPopupOpen(true);
+        } else {
+          setIsLoading(true);
+          fetch('http://localhost:5000/tabela_simbolos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: activeTab.content
+          })
+            .then(res => res.json())
+            .then(data => {
+              setTabelaSimbolos(data.tabela_simbolos);
+              addTab({ 
+                title: 'Tabela de Símbolos', 
+                type: 'symbolTable',
+                tableData: data.tabela_simbolos
+              });
+              setIsLoading(false);
+            })
+            .catch(() => {
+              setIsPopupOpen(true);
+              setIsLoading(false);
+            });
+        }
+        break;
+      case 'TabelaSimbolos':
+        if (tabelaSimbolos) {
+          addTab({
+            title: 'Tabela de Símbolos',
+            type: 'symbolTable',
+            tableData: tabelaSimbolos
+          });
+        } else {
+          setIsPopupOpen(true);
+        }
+        break;
       default:
         console.log(`Ação de menu não tratada: ${action}`);
     }
@@ -146,7 +187,6 @@ export default function App() {
   const handleMenuToggle = menu => {
     setMenus(m => ({ ...m, [menu]: !m[menu] }));
     if (menu === 'Tabelas' && menus.Tabelas) setShowDeclVars(false);
-    console.log(menus);
   };
 
   const startResize = () => {
@@ -154,27 +194,6 @@ export default function App() {
     if (!panelVisible) setPanelVisible(true);
   };
 
-  const adicionarEspacoAntesEDepois = (texto) => {
-    // Primeiro, armazene as quebras de linha em um array para preservá-las
-    const quebrasDeLinha = [];
-    texto = texto.replace(/\n/g, (match, offset) => {
-      const id = quebrasDeLinha.length;
-      quebrasDeLinha.push(offset);
-      return `\n${id}`;
-    });
-
-    texto = texto.replace(
-      /([A-Za-z0-9])\s*([,;.])\s*(?=[A-Za-z0-9]|$)/g,
-      '$1 $2 '
-    );
-  
-    quebrasDeLinha.forEach(id => {
-      texto = texto.replace(`\n${id}`, '\n');
-    });
-  
-    return texto;
-  };
-  
   const handleRunClick = () => {
     if(!activeTab.content){
       setIsPopupOpen(true);
@@ -182,6 +201,11 @@ export default function App() {
     }
     setIsLoading(true);
     setErrors([]);
+    setMepaCode(null);
+    setTable(null);
+    setSintatico(null);
+    setSemantico(null);
+    
     fetch('http://localhost:5000/enviar_conteudo', {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain' },
@@ -189,21 +213,71 @@ export default function App() {
     })
       .then(res => res.json())
       .then(data => {
-        setTable(data.tabela);
-        setSintatico(data.sintatico);
+        // Processar tabela léxica e erros
+        const lexicalTable = data.tabela_lexica || data.tabela;
+        setTable(lexicalTable);
         
-        if (data.sintatico && Array.isArray(data.sintatico) && data.sintatico.length > 0) {
-          const formattedErrors = data.sintatico.map(error => ({
-            line: error[0],        
-            column: 0,             
-            message: error[1]     
+        // Verificar erros léxicos
+        const hasLexicalErrors = lexicalTable?.erro?.linha?.length > 0;
+        
+        // Processar erros sintáticos
+        let sintaticoRaw = (data.resultado_analise && data.resultado_analise.sintaxe) || data.sintatico;
+        let sintaticoArr = sintaticoRaw;
+        if (Array.isArray(sintaticoRaw) && sintaticoRaw.length > 0 && sintaticoRaw[0] && 
+            typeof sintaticoRaw[0] === 'object' && sintaticoRaw[0].linha !== undefined && 
+            sintaticoRaw[0].mensagem !== undefined) {
+          sintaticoArr = sintaticoRaw.map(e => [e.linha, e.mensagem]);
+        }
+        setSintatico(sintaticoArr);
+        
+        // Verificar erros sintáticos
+        const hasSyntacticErrors = sintaticoArr?.length > 0;
+        
+        // Processar erros semânticos
+        const semanticoData = (data.resultado_analise && data.resultado_analise.semantica) || data.semantico;
+        setSemantico(semanticoData);
+        
+        // Verificar erros semânticos (excluindo avisos)
+        const semanticErrors = semanticoData?.filter(e => !e.mensagem.startsWith('Aviso:')) || [];
+        const hasSemanticErrors = semanticErrors.length > 0;
+        
+        // Configurar erros para o editor
+        if (hasSyntacticErrors) {
+          const formattedErrors = sintaticoArr.map(error => ({
+            line: error[0],
+            column: 0,
+            message: error[1]
           }));
           setErrors(formattedErrors);
         } else {
           setErrors([]);
         }
         
-        setPanelVisible(true);
+        // Armazenar código MEPA e tabela de símbolos
+        setMepaCode(data.mepa_code);
+        setTabelaSimbolos(data.tabela_simbolos);
+        
+        // Verificar se podemos gerar código MEPA
+        const canGenerateMepa = !hasLexicalErrors && !hasSyntacticErrors && !hasSemanticErrors && data.mepa_code;
+        
+        // Se não houver erros, criar aba com código MEPA
+        if (canGenerateMepa) {
+          // Converter array de arrays em string
+          const mepaText = data.mepa_code.map(line => line.join(' ')).join('\n');
+          addTab({
+            title: 'Código MEPA',
+            type: 'editor',
+            content: mepaText,
+            language: 'text'
+          });
+        }
+
+        // Exibir painel se houver qualquer tipo de erro ou aviso
+        const hasSemanticWarnings = semanticoData?.filter(e => e.mensagem.startsWith('Aviso:'))?.length > 0;
+        if (hasLexicalErrors || hasSyntacticErrors || hasSemanticErrors || hasSemanticWarnings) {
+          setPanelVisible(true);
+        }
+
         setIsLoading(false);
       })
       .catch(err => {
@@ -261,6 +335,7 @@ export default function App() {
               value={activeTab.content}
               onChange={text => updateTabContent(activeTabId, text)}
               errors={errors}
+              mode={activeTab.language}
             />
             <button className="run-button" onClick={handleRunClick}>▶</button>
           </div>
@@ -268,15 +343,18 @@ export default function App() {
         {activeTab && activeTab.type === 'table' && (
           <Table type={activeTab.title} tableData={table} />
         )}
+        {activeTab && activeTab.type === 'symbolTable' && (
+          <Table type="TabelaSimbolos" tableData={activeTab.tableData} />
+        )}
         {activeTab && activeTab.type === 'CsvTable' && (
           <CsvTable type={activeTab.title} tabela={csvText} />
         )}
       </main>
       {isLoading ? (
-        <div>Carregando ...</div>
+        <div className="loading-indicator">Carregando...</div>
       ) : (
         panelVisible && (
-          <Panel height={panelHeight} onStartResize={startResize} table={table} sintatico={sintatico} />
+          <Panel height={panelHeight} onStartResize={startResize} table={table} sintatico={sintatico} semantico={semantico} />
         )
       )}
       <button

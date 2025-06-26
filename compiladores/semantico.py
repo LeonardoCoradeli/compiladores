@@ -171,25 +171,37 @@ class AnalisadorSemantico:
                 i += 1
                 if i < len(tokens) and tokens[i] == 'identifier':
                     nome = lexemas[i]
-                    try: self.tabela.declarar(nome, 'n/a', 'procedimento', lin)
-                    except ErroSemantico as e: self.erros.append(e)
-                    self.tabela.entrar_escopo(nome)
-                    i += 1
-                if i < len(tokens) and tokens[i] == 'l_paren':
-                    i += 1
-                    while i < len(tokens) and tokens[i] != 'r_paren':
-                        if tokens[i] == 'var': i+=1
-                        if tokens[i] == 'identifier' and i+2 < len(tokens) and tokens[i+1] == 'colon':
-                            tipo_p = tokens[i+2]
-                            try: self.tabela.declarar(lexemas[i], tipo_p, 'parametro', linhas[i])
-                            except ErroSemantico as e: self.erros.append(e)
-                            i += 3
-                            if i < len(tokens) and tokens[i] == 'semicolon': i+=1
-                            continue
+                    try: 
+                        self.tabela.declarar(nome, 'n/a', 'procedimento', lin)
+                        self.tabela.entrar_escopo(nome)
+                        escopo_atual = self.tabela.nomes[-1]
+                        
+                        # Processar parâmetros
                         i += 1
-                    if i < len(tokens) and tokens[i] == 'r_paren': i += 1
-                if i < len(tokens) and tokens[i] == 'semicolon': i += 1
-                continue
+                        if i < len(tokens) and tokens[i] == 'right_parenteses':
+                            i += 1
+                            while i < len(tokens) and tokens[i] != 'left_parenteses':
+                                if tokens[i] == 'variable':
+                                    i += 1
+                                    if tokens[i] == 'identifier':
+                                        param_name = lexemas[i]
+                                        i += 1
+                                        if tokens[i] == 'colon':
+                                            i += 1
+                                            if tokens[i] in ('int', 'boolean'):
+                                                tipo_p = tokens[i]
+                                                try: 
+                                                    self.tabela.declarar(
+                                                        param_name, 
+                                                        tipo_p, 
+                                                        'parametro', 
+                                                        linhas[i]
+                                                    )
+                                                except ErroSemantico as e: 
+                                                    self.erros.append(e)
+                                i += 1
+                    except ErroSemantico as e: 
+                        self.erros.append(e)
 
 
             # Início de bloco
@@ -256,3 +268,18 @@ class AnalisadorSemantico:
                 self.erro(f"Símbolo '{l}' não declarado (usado em expressão).", lin)
                 return None, i + 1
         return None, i + 1
+    
+    def buscar_escopo(tabela, lexema, escopo_atual):
+        # Primeiro busca no escopo atual
+        if escopo_atual in tabela:
+            for simbolo in tabela[escopo_atual]:
+                if simbolo['Lexema'] == lexema:
+                    return simbolo
+        
+        # Depois busca no escopo global
+        if 'global' in tabela:
+            for simbolo in tabela['global']:
+                if simbolo['Lexema'] == lexema:
+                    return simbolo
+                    
+        return None
