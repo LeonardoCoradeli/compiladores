@@ -52,6 +52,17 @@ export default function App() {
 
   const activeTab = tabs.find(t => t.id === activeTabId);
 
+  // Função para limpar todos os estados de erro e análise
+  const clearAnalysisState = () => {
+    setErrors([]);
+    setTable(null);
+    setSintatico(null);
+    setSemantico(null);
+    setTabelaSimbolos(null);
+    setMepaCode(null);
+    setPanelVisible(false);
+  };
+
   const saveFile = tabId => {
     const tab = tabs.find(t => t.id === tabId);
     if (!tab || tab.type !== 'editor') return;
@@ -97,8 +108,12 @@ export default function App() {
         );
         if (replace && activeTab.type === 'editor') {
           updateTabContent(activeTabId, '');
+          // Limpar erros quando criar novo arquivo
+          clearAnalysisState();
         } else {
           addTab({ title: `Editor ${nextTabId}`, type: 'editor' });
+          // Limpar erros quando criar nova aba
+          clearAnalysisState();
         }
         break;
       }
@@ -176,8 +191,12 @@ export default function App() {
       );
       if (replace && activeTab.type === 'editor') {
         updateTabContent(activeTabId, text);
+        // Limpar erros quando carregar novo arquivo
+        clearAnalysisState();
       } else {
         addTab({ title: file.name.replace(/\.txt$/, ''), type: 'editor', content: text });
+        // Limpar erros quando carregar arquivo em nova aba
+        clearAnalysisState();
       }
       e.target.value = null;
     };
@@ -213,67 +232,138 @@ export default function App() {
     })
       .then(res => res.json())
       .then(data => {
-        // Processar tabela léxica e erros
+        console.log('Resposta da API:', data); // Debug
+        
+        // Processar tabela léxica
         const lexicalTable = data.tabela_lexica || data.tabela;
         setTable(lexicalTable);
         
         // Verificar erros léxicos
         const hasLexicalErrors = lexicalTable?.erro?.linha?.length > 0;
+        console.log('=== DEBUG ERROS LÉXICOS ===');
+        console.log('lexicalTable:', lexicalTable);
+        console.log('lexicalTable.erro:', lexicalTable?.erro);
+        console.log('hasLexicalErrors:', hasLexicalErrors);
+        console.log('Erros léxicos encontrados:', hasLexicalErrors, lexicalTable?.erro);
         
-        // Processar erros sintáticos
-        let sintaticoRaw = (data.resultado_analise && data.resultado_analise.sintaxe) || data.sintatico;
-        let sintaticoArr = sintaticoRaw;
-        if (Array.isArray(sintaticoRaw) && sintaticoRaw.length > 0 && sintaticoRaw[0] && 
-            typeof sintaticoRaw[0] === 'object' && sintaticoRaw[0].linha !== undefined && 
-            sintaticoRaw[0].mensagem !== undefined) {
-          sintaticoArr = sintaticoRaw.map(e => [e.linha, e.mensagem]);
-        }
-        setSintatico(sintaticoArr);
+        // Processar erros sintáticos (nova estrutura da API)
+        const sintaticoData = data.erros?.sintaxe || [];
+        setSintatico(sintaticoData);
+        console.log('Erros sintáticos encontrados:', sintaticoData.length, sintaticoData);
         
         // Verificar erros sintáticos
-        const hasSyntacticErrors = sintaticoArr?.length > 0;
+        const hasSyntacticErrors = sintaticoData?.length > 0;
         
         // Processar erros semânticos
-        const semanticoData = (data.resultado_analise && data.resultado_analise.semantica) || data.semantico;
+        const semanticosErros = data.erros?.semantica_erros || [];
+        const semanticosAvisos = data.erros?.semantica_avisos || [];
+        const semanticoData = [...semanticosErros, ...semanticosAvisos];
         setSemantico(semanticoData);
+        console.log('Erros semânticos encontrados:', semanticosErros.length, semanticosErros);
+        console.log('Avisos semânticos encontrados:', semanticosAvisos.length, semanticosAvisos);
         
-        // Verificar erros semânticos (excluindo avisos)
-        const semanticErrors = semanticoData?.filter(e => !e.mensagem.startsWith('Aviso:')) || [];
-        const hasSemanticErrors = semanticErrors.length > 0;
+        // Verificar erros semânticos fatais (excluindo avisos)
+        const hasSemanticErrors = semanticosErros.length > 0;
         
-        // Configurar erros para o editor
-        if (hasSyntacticErrors) {
-          const formattedErrors = sintaticoArr.map(error => ({
-            line: error[0],
+        // Configurar erros para o editor (léxicos, sintáticos e semânticos)
+        let editorErrors = [];
+        
+        // Adicionar erros léxicos ao editor
+        if (hasLexicalErrors && lexicalTable.erro?.linha) {
+          console.log('=== PROCESSANDO ERROS LÉXICOS PARA EDITOR ===');
+          console.log('lexicalTable.erro.linha:', lexicalTable.erro.linha);
+          console.log('lexicalTable.erro.mensagem:', lexicalTable.erro.mensagem);
+          
+          const lexicalErrors = lexicalTable.erro.linha.map((linha, index) => ({
+            line: linha,
             column: 0,
-            message: error[1]
+            message: `[ERRO LÉXICO] ${lexicalTable.erro.mensagem[index] || 'Erro léxico'}`,
+            type: 'error',
+            errorType: 'lexical' // Identificador para erros léxicos
           }));
-          setErrors(formattedErrors);
-        } else {
-          setErrors([]);
+          
+          console.log('lexicalErrors criados:', lexicalErrors);
+          editorErrors = [...editorErrors, ...lexicalErrors];
         }
+        
+        // Adicionar erros sintáticos ao editor
+        if (hasSyntacticErrors) {
+          const syntacticErrors = sintaticoData.map(error => ({
+            line: error.linha,
+            column: 0,
+            message: `[ERRO SINTÁTICO] ${error.mensagem}`,
+            type: 'error',
+            errorType: 'syntactic' // Identificador para erros sintáticos
+          }));
+          editorErrors = [...editorErrors, ...syntacticErrors];
+        }
+        
+        // Adicionar erros semânticos ao editor (destacar linha inteira)
+        if (semanticosErros.length > 0) {
+          const semanticErrors = semanticosErros.map(error => {
+            const linha = parseInt(error.linha || error.Linha || 1);
+            const mensagem = error.mensagem || error.Mensagem || '';
+            
+            return {
+              line: Math.max(1, linha), // Garantir que linha seja pelo menos 1
+              column: 0, // Começar do início da linha
+              message: `[ERRO SEMÂNTICO] ${mensagem}`,
+              type: 'error',
+              errorType: 'semantic' // Usar errorType como os outros tipos de erro
+            };
+          });
+          console.log('Semantic errors for editor:', semanticErrors); // Debug
+          editorErrors = [...editorErrors, ...semanticErrors];
+        }
+        
+        // Adicionar avisos semânticos ao editor (destacar linha inteira)
+        if (semanticosAvisos.length > 0) {
+          const semanticWarnings = semanticosAvisos.map(warning => {
+            const linha = parseInt(warning.linha || warning.Linha || 1);
+            const mensagem = warning.mensagem || warning.Mensagem || '';
+            
+            return {
+              line: Math.max(1, linha), // Garantir que linha seja pelo menos 1
+              column: 0, // Começar do início da linha
+              message: `[AVISO SEMÂNTICO] ${mensagem}`,
+              type: 'warning',
+              errorType: 'semantic-warning' // Usar errorType consistente
+            };
+          });
+          console.log('Semantic warnings for editor:', semanticWarnings); // Debug
+          editorErrors = [...editorErrors, ...semanticWarnings];
+        }
+        
+        setErrors(editorErrors);
+        console.log('Total de erros enviados para o editor:', editorErrors.length, editorErrors);
         
         // Armazenar código MEPA e tabela de símbolos
         setMepaCode(data.mepa_code);
         setTabelaSimbolos(data.tabela_simbolos);
         
-        // Verificar se podemos gerar código MEPA
-        const canGenerateMepa = !hasLexicalErrors && !hasSyntacticErrors && !hasSemanticErrors && data.mepa_code;
+        // Verificar se podemos gerar código MEPA (apenas se não houver NENHUM erro, mas avisos são permitidos)
+        const canGenerateMepa = !hasLexicalErrors && !hasSyntacticErrors && !hasSemanticErrors && data.mepa_code && data.mepa_code.length > 0;
         
-        // Se não houver erros, criar aba com código MEPA
+        // Se não houver erros fatais, criar aba com código MEPA
         if (canGenerateMepa) {
           // Converter array de arrays em string
-          const mepaText = data.mepa_code.map(line => line.join(' ')).join('\n');
+          const mepaText = data.mepa_code.map(line => 
+            Array.isArray(line) ? line.join(' ') : line.toString()
+          ).join('\n');
+          
           addTab({
             title: 'Código MEPA',
             type: 'editor',
             content: mepaText,
             language: 'text'
           });
+          
+          // Limpar erros ao abrir tela do MEPA para manter interface limpa
+          clearAnalysisState();
         }
 
         // Exibir painel se houver qualquer tipo de erro ou aviso
-        const hasSemanticWarnings = semanticoData?.filter(e => e.mensagem.startsWith('Aviso:'))?.length > 0;
+        const hasSemanticWarnings = semanticosAvisos.length > 0;
         if (hasLexicalErrors || hasSyntacticErrors || hasSemanticErrors || hasSemanticWarnings) {
           setPanelVisible(true);
         }
