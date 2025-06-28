@@ -1,15 +1,15 @@
 class MepaInterpreterDebug:
     def __init__(self, mepa_code, input_data=None, debug=False):
-        self.C = mepa_code        # Área de código (lista de instruções)
-        self.D = [0] * 100       # Área de dados (memória) - tamanho fixo para simplificar
-        self.i = 0                # Contador de programa
-        self.s = -1               # Topo da pilha (índice)
-        self.input_data = input_data or []  # Dados de entrada
-        self.input_index = 0      # Índice do próximo dado de entrada
-        self.output = []          # Saída gerada pelo programa
-        self.running = True       # Estado de execução
-        self.debug = debug        # Flag de debug
-        self.step_count = 0       # Contador de passos
+        self.C = mepa_code        
+        self.D = [0] * 100       
+        self.i = 0                
+        self.s = -1               
+        self.input_data = input_data or []  
+        self.input_index = 0      
+        self.output = []          
+        self.running = True       
+        self.debug = debug        
+        self.step_count = 0       
 
     def print_debug(self, msg):
         if self.debug:
@@ -32,11 +32,11 @@ class MepaInterpreterDebug:
             instruction = self.C[self.i]
             self.step_count += 1
             
-            # Limite de segurança para evitar loops infinitos
+            
             if self.step_count > 1000:
                 raise RuntimeError("Limite de passos excedido - possível loop infinito")
             
-            # Garantir que instruction é uma lista
+            
             if isinstance(instruction, str):
                 instruction = [instruction]
             elif not isinstance(instruction, list):
@@ -49,7 +49,7 @@ class MepaInterpreterDebug:
             self.print_state()
 
             try:
-                # Executar a instrução diretamente
+                
                 if op == "INPP":
                     self.inpp()
                 elif op == "AMEM":
@@ -121,23 +121,23 @@ class MepaInterpreterDebug:
                 elif op == "NADA":
                     self.nada()
                 elif op == "CHPR":
-                    # Chamada de procedimento - simplificada
+                    
                     if not args:
                         raise RuntimeError("CHPR requer um argumento")
                     self.chpr(args[0])
                 elif op == "RTPR":
-                    # Retorno de procedimento - simplificada
+                    
                     self.rtpr()
                 else:
                     raise RuntimeError(f"Instrução desconhecida: {op}")
                 
-                # Incrementa PC apenas se não houve desvio
+                
                 if op not in ["DSVS", "DSVF", "PARA", "CHPR", "RTPR"]:
                     self.i += 1
                 elif op == "DSVF" and not hasattr(self, '_jumped'):
                     self.i += 1
                 
-                # Reset flag de jump
+                
                 if hasattr(self, '_jumped'):
                     delattr(self, '_jumped')
                         
@@ -154,11 +154,11 @@ class MepaInterpreterDebug:
             "steps": self.step_count
         }
 
-    # Implementação das instruções
+    
     def inpp(self):
         """Inicializa o programa principal"""
-        self.D = [0] * 100  # Memória inicializada com zeros
-        self.s = -1         # Pilha vazia
+        self.D = [0] * 100  
+        self.s = -1         
         self.print_debug("  -> INPP: Inicializado")
 
     def amem(self, m):
@@ -242,7 +242,7 @@ class MepaInterpreterDebug:
         self.print_debug(f"  -> DIVI: tentando {a} / {b}")
         if b == 0:
             raise RuntimeError("Divisão por zero")
-        result = a // b  # Divisão inteira
+        result = a // b  
         self.D[self.s-1] = result
         self.s -= 1
         self.print_debug(f"  -> DIVI: {a} / {b} = {result}")
@@ -352,7 +352,7 @@ class MepaInterpreterDebug:
 
     def dsvs(self, p):
         """Desvio incondicional"""
-        # Verificar se p é um número válido
+        
         if not isinstance(p, int):
             raise RuntimeError(f"Endereço de desvio deve ser um número inteiro: {p}")
         if p < 0 or p >= len(self.C):
@@ -365,7 +365,7 @@ class MepaInterpreterDebug:
         """Desvio se falso (topo == 0)"""
         if self.s < 0:
             raise RuntimeError("Stack underflow")
-        # Verificar se p é um número válido
+        
         if not isinstance(p, int):
             raise RuntimeError(f"Endereço de desvio deve ser um número inteiro: {p}")
         if p < 0 or p >= len(self.C):
@@ -388,7 +388,7 @@ class MepaInterpreterDebug:
         
         self.s += 1
         if self.input_index >= len(self.input_data):
-            value = 0  # Valor padrão
+            value = 0  
         else:
             value = self.input_data[self.input_index]
             self.input_index += 1
@@ -410,11 +410,11 @@ class MepaInterpreterDebug:
         if self.s < 0:
             raise RuntimeError("Stack underflow")
         char_code = self.D[self.s]
-        if 0 <= char_code <= 127:  # ASCII válido
+        if 0 <= char_code <= 127:  
             char = chr(char_code)
             self.output.append(char)
         else:
-            self.output.append('?')  # Caractere inválido
+            self.output.append('?')  
         self.s -= 1
         self.print_debug(f"  -> IMPC: código {char_code}")
 
@@ -437,14 +437,14 @@ class MepaInterpreterDebug:
 
     def chpr(self, p):
         """Chama procedimento (versão simplificada)"""
-        # Verificar se p é um número válido
+        
         if not isinstance(p, int):
             raise RuntimeError(f"Endereço de chamada deve ser um número inteiro: {p}")
-        # Empilha endereço de retorno
+        
         if self.s >= 99:
             raise RuntimeError("Stack overflow")
         self.s += 1
-        self.D[self.s] = self.i + 1  # Próxima instrução após CHPR
+        self.D[self.s] = self.i + 1  
         self.i = p
         self._jumped = True
         self.print_debug(f"  -> CHPR {p}: chamando procedimento, retorno em {self.D[self.s]}")
@@ -460,9 +460,9 @@ class MepaInterpreterDebug:
         self.print_debug(f"  -> RTPR: retornando para {return_address}")
 
 
-# Exemplo de uso com código em formato de lista
+
 if __name__ == "__main__":
-    # Código de exemplo no formato de lista
+    
     codigo_exemplo = [
         ['INPP'], 
         ['AMEM', 6], 
@@ -532,7 +532,7 @@ if __name__ == "__main__":
         ['PARA']
     ]
     
-    # Teste simples
+    
     codigo_simples = [
         ['INPP'],
         ['CRCT', 10],

@@ -1,10 +1,10 @@
 class TabelaSimbolos:
     def __init__(self):
-        self.escopos = [{}]  # Pilha de escopos ativos
-        self.nomes = ['global']   # Pilha de nomes de escopos ativos
+        self.escopos = [{}]  
+        self.nomes = ['global']   
         
-        # NOVO: Histórico de todos os escopos já criados, com seus nomes.
-        # Ele é uma lista de tuplas: (nome_do_escopo, dicionario_de_simbolos)
+        
+        
         self.historico = [(self.nomes[0], self.escopos[0])]
 
     def entrar_escopo(self, nome):
@@ -13,14 +13,14 @@ class TabelaSimbolos:
         e também o registra permanentemente no histórico.
         """
         novo_dict = {}
-        # Gera um nome único para o escopo para evitar colisões
+        
         nome_esc = f"{nome}_{len(self.historico) + 1}"
         
-        # Adiciona o novo escopo à pilha de escopos ativos
+        
         self.escopos.append(novo_dict)
         self.nomes.append(nome_esc)
         
-        # NOVO: Registra o novo escopo no histórico para não perdê-lo
+        
         self.historico.append((nome_esc, novo_dict))
 
     def sair_escopo(self):
@@ -50,7 +50,7 @@ class TabelaSimbolos:
         if simb:
             simb['utilizada'] = True
 
-    # MUDANÇA: O método agora itera sobre o histórico, não sobre a pilha ativa.
+    
     def formatar_por_escopo(self):
         """
         Formata a tabela de símbolos em um dicionário, onde cada chave é um nome de escopo
@@ -59,7 +59,7 @@ class TabelaSimbolos:
         """
         tabelas_por_escopo = {}
 
-        # MUDANÇA: Itera sobre o histórico de todos os escopos que já existiram.
+        
         for nome_escopo, escopo_dict in self.historico:
             lista_simbolos = []
             for simbolo in escopo_dict.values():
@@ -74,7 +74,7 @@ class TabelaSimbolos:
 
         return tabelas_por_escopo
 
-# A classe ErroSemantico permanece a mesma da resposta anterior.
+
 class ErroSemantico(Exception):
     def __init__(self, msg, linha=None, escopo=None):
         super().__init__(msg)
@@ -106,7 +106,7 @@ class AnalisadorSemantico:
         escopo_atual = escopo_especifico if escopo_especifico is not None else self.tabela.nomes[-1]
         self.erros.append(ErroSemantico(msg, linha, escopo_atual))
 
-    # MUDANÇA: Novo método para formatar a lista de erros em uma tabela.
+    
     def formatar_erros(self):
         """Converte a lista de objetos ErroSemantico (ou strings) em uma lista de dicionários."""
         tabela_erros = []
@@ -116,7 +116,7 @@ class AnalisadorSemantico:
                 escopo = e.escopo
                 msg = e.mensagem
             else:
-                # Se for só uma string, converte para um dict genérico
+                
                 linha = None
                 escopo = None
                 msg = str(e)
@@ -128,15 +128,15 @@ class AnalisadorSemantico:
         return tabela_erros
 
     def analisar(self, tokens, lexemas, linhas):
-        # Reset para nova análise
+        
         self.tabela = TabelaSimbolos()
         self.erros.clear()
         self.declarar_builtins()
         i = 0
         
-        # ... (todo o loop de análise 'while i < len(tokens):' permanece exatamente o mesmo) ...
-        # ... O código do loop foi omitido aqui por brevidade, pois não muda. ...
-        # Reconhecer 'program <nome> ;'
+        
+        
+        
         if i < len(tokens) and tokens[i] == 'program':
             i += 1
             if i < len(tokens) and tokens[i] == 'identifier':
@@ -152,7 +152,7 @@ class AnalisadorSemantico:
         while i < len(tokens):
             tok, lex, lin = tokens[i], lexemas[i], linhas[i]
 
-            # Declaração de variáveis
+            
             if tok in ('int', 'real', 'boolean'):
                 tipo = tok
                 i += 1
@@ -166,7 +166,7 @@ class AnalisadorSemantico:
                 if i < len(tokens) and tokens[i] == 'semicolon': i += 1
                 continue
 
-            # Procedimento
+            
             if tok == 'procedure':
                 i += 1
                 if i < len(tokens) and tokens[i] == 'identifier':
@@ -176,7 +176,7 @@ class AnalisadorSemantico:
                         self.tabela.entrar_escopo(nome)
                         escopo_atual = self.tabela.nomes[-1]
                         
-                        # Processar parâmetros
+                        
                         i += 1
                         if i < len(tokens) and tokens[i] == 'right_parenteses':
                             i += 1
@@ -204,13 +204,13 @@ class AnalisadorSemantico:
                         self.erros.append(e)
 
 
-            # Início de bloco
+ 
             if tok == 'begin':
                 self.tabela.entrar_escopo('begin_block')
                 i += 1
                 continue
 
-            # Fim de bloco ou programa
+    
             if tok in ('end', 'end_command'):
                 escopo_atual = self.tabela.escopos[-1]
                 for s in list(escopo_atual.values()):
@@ -222,7 +222,7 @@ class AnalisadorSemantico:
                 if i < len(tokens) and tokens[i] in ('semicolon', 'period'): i += 1
                 continue
 
-            # Identificador: atribuição ou chamada
+   
             if tok == 'identifier':
                 simb = self.tabela.buscar(lex)
                 if not simb:
@@ -240,9 +240,7 @@ class AnalisadorSemantico:
                 i += 1
                 continue
             i += 1
-        # --- FIM DO LOOP DE ANÁLISE ---
 
-        # MUDANÇA: O retorno agora é um dicionário estruturado.
         resultado_analise = {
             "erros": self.formatar_erros(),
             "tabelas_de_simbolos": self.tabela.formatar_por_escopo()
@@ -270,13 +268,13 @@ class AnalisadorSemantico:
         return None, i + 1
     
     def buscar_escopo(tabela, lexema, escopo_atual):
-        # Primeiro busca no escopo atual
+        
         if escopo_atual in tabela:
             for simbolo in tabela[escopo_atual]:
                 if simbolo['Lexema'] == lexema:
                     return simbolo
         
-        # Depois busca no escopo global
+
         if 'global' in tabela:
             for simbolo in tabela['global']:
                 if simbolo['Lexema'] == lexema:

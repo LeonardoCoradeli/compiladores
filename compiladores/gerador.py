@@ -35,7 +35,7 @@ class MEPACodeGenerator:
         operand_stack = []
         operator_stack = []
         
-        # Operadores binários em ordem de precedência
+        
         operators = {
             'multiply': ('MULT', 6),
             'divide': ('DIVI', 6), 
@@ -53,33 +53,33 @@ class MEPACodeGenerator:
         
         def apply_operator(op_token):
             if operand_stack:
-                # Para operadores binários, precisamos de 2 operandos
+                
                 if len(operand_stack) >= 2:
                     right = operand_stack.pop()
                     left = operand_stack.pop()
-                    # Gera código para operandos na ordem correta
+                    
                     for instr in left:
                         self.code.append(instr)
                         self.code_address += 1
                     for instr in right:
                         self.code.append(instr)
                         self.code_address += 1
-                    # Aplica operador
+                    
                     op_code = operators[op_token][0]
                     self.code.append((op_code,))
                     self.code_address += 1
-                    # Resultado fica na pilha (representado como vazio)
+                    
                     operand_stack.append([])
         
         while i < len(tokens):
             token = tokens[i]
             lexema = lexemas[i]
             
-            # Para de processar em delimitadores
+            
             if token in ('semicolon', 'then', 'do', 'else', 'end', 'left_parenteses', 'comma'):
                 break
                 
-            # Operandos
+            
             if token == 'identifier':
                 addr = self._get_var_address(lexema)
                 operand_stack.append([('CRVL', addr)])
@@ -90,9 +90,9 @@ class MEPACodeGenerator:
                 value = 1 if token == 'true' else 0
                 operand_stack.append([('CRCT', value)])
             
-            # Operadores
+            
             elif token in operators:
-                # Aplica operadores de maior precedência primeiro
+                
                 while (operator_stack and 
                        operator_stack[-1] in operators and
                        operators[operator_stack[-1]][1] >= operators[token][1]):
@@ -101,13 +101,12 @@ class MEPACodeGenerator:
                 
                 operator_stack.append(token)
             
-            # Parênteses (simplificado)
             elif token == 'right_parenteses':
-                pass  # Ignora por enquanto
+                pass  
             
             i += 1
         
-        # Aplica operadores restantes
+        
         while operator_stack:
             op = operator_stack.pop()
             apply_operator(op)
@@ -117,12 +116,12 @@ class MEPACodeGenerator:
     def _parse_assignment(self, tokens, lexemas, start_idx):
         """Processa atribuição: var := expressão"""
         var_name = lexemas[start_idx]
-        i = start_idx + 2  # Pula var e :=
+        i = start_idx + 2  
         
-        # Processa expressão do lado direito
+        
         i = self._parse_simple_expression(tokens, lexemas, i)
         
-        # Armazena resultado na variável
+        
         addr = self._get_var_address(var_name)
         self.code.append(('ARMZ', addr))
         self.code_address += 1
@@ -131,38 +130,38 @@ class MEPACodeGenerator:
     
     def _parse_if_statement(self, tokens, lexemas, start_idx):
         """Processa comando if-then-else"""
-        i = start_idx + 1  # Pula 'if'
+        i = start_idx + 1  
         
-        # Processa condição
+        
         i = self._parse_simple_expression(tokens, lexemas, i)
         
-        # Labels para desvios
+        
         false_label = self._new_label()
         end_label = self._new_label()
         
         self.code.append(('DSVF', false_label))
         self.code_address += 1
         
-        # Pula 'then'
+        
         if i < len(tokens) and tokens[i] == 'execute_conditional':
             i += 1
         
-        # Processa bloco then
+        
         i = self._parse_statement_block(tokens, lexemas, i)
         
-        # Verifica se há else
+        
         has_else = (i < len(tokens) and tokens[i] == 'otherwise_conditional')
         
         if has_else:
             self.code.append(('DSVS', end_label))
             self.code_address += 1
         
-        # Label do else
+        
         self.code.append((false_label + ':',))
         self.code_address += 1
         
         if has_else:
-            i += 1  # Pula 'else'
+            i += 1  
             i = self._parse_statement_block(tokens, lexemas, i)
             self.code.append((end_label + ':',))
             self.code_address += 1
@@ -174,26 +173,26 @@ class MEPACodeGenerator:
         start_label = self._new_label()
         end_label = self._new_label()
         
-        # Label do início do loop
+        
         self.code.append((start_label + ':',))
         self.code_address += 1
         
-        i = start_idx + 1  # Pula 'while'
+        i = start_idx + 1  
         
-        # Processa condição
+        
         i = self._parse_simple_expression(tokens, lexemas, i)
         
         self.code.append(('DSVF', end_label))
         self.code_address += 1
         
-        # Pula 'do'
+        
         if i < len(tokens) and tokens[i] == 'execute_loop':
             i += 1
         
-        # Processa corpo do loop
+        
         i = self._parse_statement_block(tokens, lexemas, i)
         
-        # Volta para o início
+        
         self.code.append(('DSVS', start_label))
         self.code_address += 1
         self.code.append((end_label + ':',))
@@ -206,23 +205,23 @@ class MEPACodeGenerator:
         proc_name = lexemas[start_idx]
         i = start_idx + 1
         
-        # Se tem parênteses, processa parâmetros
+        
         if i < len(tokens) and tokens[i] == 'right_parenteses':
-            i += 1  # Pula '('
+            i += 1  
             
-            # Processa parâmetros
+            
             while i < len(tokens) and tokens[i] != 'left_parenteses':
                 if tokens[i] == 'identifier':
                     addr = self._get_var_address(lexemas[i])
                     self.code.append(('CRVL', addr))
                     self.code_address += 1
                 elif tokens[i] == 'comma':
-                    pass  # Ignora vírgulas
+                    pass  
                 i += 1
             
-            i += 1  # Pula ')'
+            i += 1  
         
-        # Chamada do procedimento
+        
         self.code.append(('CHPR', f'PROC_{proc_name}'))
         self.code_address += 1
         
@@ -231,7 +230,7 @@ class MEPACodeGenerator:
     def _parse_io_statement(self, tokens, lexemas, start_idx):
         """Processa comandos read/write"""
         cmd = lexemas[start_idx]
-        i = start_idx + 2  # Pula comando e '('
+        i = start_idx + 2  
         
         if cmd == 'read':
             if tokens[i] == 'identifier':
@@ -245,7 +244,7 @@ class MEPACodeGenerator:
             self.code.append(('IMPR',))
             self.code_address += 1
         
-        # Pula ')'
+        
         if i < len(tokens) and tokens[i] == 'left_parenteses':
             i += 1
         
@@ -255,22 +254,22 @@ class MEPACodeGenerator:
         """Processa um bloco de comandos (begin...end ou comando único)"""
         i = start_idx
         
-        # Se é um bloco begin...end
+        
         if i < len(tokens) and tokens[i] == 'start_command':
-            i += 1  # Pula 'begin'
+            i += 1  
             
             while i < len(tokens) and tokens[i] != 'end_command':
                 i = self._parse_single_statement(tokens, lexemas, i)
                 
-                # Pula ponto e vírgula
+                
                 if i < len(tokens) and tokens[i] == 'semicolon':
                     i += 1
             
-            # Pula 'end'
+            
             if i < len(tokens) and tokens[i] == 'end_command':
                 i += 1
         else:
-            # Comando único
+            
             i = self._parse_single_statement(tokens, lexemas, i)
         
         return i
@@ -283,53 +282,53 @@ class MEPACodeGenerator:
         token = tokens[start_idx]
         lexema = lexemas[start_idx]
         
-        # Atribuição
+        
         if (token == 'identifier' and 
             start_idx + 1 < len(tokens) and 
             tokens[start_idx + 1] == 'assignment_operator'):
             return self._parse_assignment(tokens, lexemas, start_idx)
         
-        # Comando if
+        
         elif token == 'conditional':
             return self._parse_if_statement(tokens, lexemas, start_idx)
         
-        # Comando while  
+        
         elif token == 'loop':
             return self._parse_while_statement(tokens, lexemas, start_idx)
         
-        # Comandos read/write
+        
         elif lexema in ('read', 'write'):
             return self._parse_io_statement(tokens, lexemas, start_idx)
         
-        # Chamada de procedimento
+        
         elif token == 'identifier':
             return self._parse_procedure_call(tokens, lexemas, start_idx)
         
-        # Pula token desconhecido
+        
         return start_idx + 1
     
     def generate(self, token_table):
         tokens = token_table['token']
         lexemas = token_table['lexema']
         
-        # Início do programa
+        
         self.code.append(('INPP',))
         self.code_address += 1
         
-        # Aloca memória para variáveis globais
+        
         if 'global' in self.symbol_tables:
             global_vars = [v for v in self.symbol_tables['global'] if v['Categoria'] == 'variavel']
             if global_vars:
                 self.code.append(('AMEM', len(global_vars)))
                 self.code_address += 1
                 
-                # Mapeia endereços
+                
                 for idx, var in enumerate(global_vars):
                     for entry in self.symbol_tables['global']:
                         if entry['Lexema'] == var['Lexema']:
                             entry['Endereco'] = idx
         
-        # Primeira passada: processa procedimentos
+        
         i = 0
         main_start = None
         
@@ -337,18 +336,18 @@ class MEPACodeGenerator:
             if tokens[i] == 'procedure':
                 proc_name = lexemas[i + 1]
                 
-                # Desvia procedimento no programa principal
+                
                 skip_label = self._new_label()
                 self.code.append(('DSVS', skip_label))
                 self.code_address += 1
                 
-                # Label do procedimento
+                
                 self.code.append((f'PROC_{proc_name}:',))
                 self.code_address += 1
                 
                 self._enter_scope(proc_name)
                 
-                # Aloca memória para variáveis locais
+                
                 if proc_name in self.symbol_tables:
                     local_vars = [v for v in self.symbol_tables[proc_name] 
                                  if v['Categoria'] in ('variavel', 'parametro')]
@@ -361,16 +360,16 @@ class MEPACodeGenerator:
                                 if entry['Lexema'] == var['Lexema']:
                                     entry['Endereco'] = idx
                 
-                # Encontra início do corpo do procedimento
+                
                 i += 2
                 while i < len(tokens) and tokens[i] != 'start_command':
                     i += 1
                 
-                # Processa corpo do procedimento
+                
                 if i < len(tokens):
                     i = self._parse_statement_block(tokens, lexemas, i)
                 
-                # Finaliza procedimento
+                
                 if proc_name in self.symbol_tables:
                     local_vars = [v for v in self.symbol_tables[proc_name] 
                                  if v['Categoria'] in ('variavel', 'parametro')]
@@ -381,7 +380,7 @@ class MEPACodeGenerator:
                 self.code.append(('RTPR',))
                 self.code_address += 1
                 
-                # Label de fim do procedimento
+                
                 self.code.append((skip_label + ':',))
                 self.code_address += 1
                 
@@ -393,11 +392,11 @@ class MEPACodeGenerator:
             
             i += 1
         
-        # Segunda passada: processa programa principal
+        
         if main_start is not None:
             self._parse_statement_block(tokens, lexemas, main_start)
         
-        # Fim do programa
+        
         self.code.append(('PARA',))
         
         return self.code

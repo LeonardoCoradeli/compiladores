@@ -21,7 +21,7 @@ FOLLOW_SETS = {
     'P_FORM_OPT': {'semicolon'},
     'P_FORM': {'semicolon'},
     'S_P_FORM_LIST': {'left_parenteses'},
-    'S_P_FORM_LINE': {'variable', 'identifier', 'left_parenteses', 'semicolon'}, # Semicolon de semicolon_opt
+    'S_P_FORM_LINE': {'variable', 'identifier', 'left_parenteses', 'semicolon'}, 
     'semicolon_opt': {'variable', 'identifier', 'left_parenteses'},
     'S_P_FORM': {'semicolon', 'variable', 'identifier', 'left_parenteses'},
     'VAR_OPT': {'identifier'},
