@@ -4,10 +4,15 @@ import 'ace-builds/src-noconflict/mode-text';
 import 'ace-builds/src-noconflict/theme-github';
 import './Editor.css';
 import './Lalg.mode.register.jsx';
+import useStore from '../../store/useStore';
 
-export default function Editor({ value, onChange, errors = [] }) {
+export default function Editor() {
+  const { activeTabId, tabs, updateTabContent, errors, warnings } = useStore();
+  const activeTab = tabs.find(t => t.id === activeTabId);
+  const value = activeTab?.content || '';
+
   const handleChange = (newValue) => {
-    onChange(newValue);
+    updateTabContent(activeTabId, newValue);
   };
 
   console.log('Errors received in Editor:', errors);
@@ -17,29 +22,23 @@ export default function Editor({ value, onChange, errors = [] }) {
   console.log('Erros léxicos no Editor:', lexicalErrors);
 
   // Criar anotações para o gutter (margem lateral)
-  const annotations = errors.map((error, index) => {
-    // Mapear o tipo de erro para o tipo de annotation do Ace Editor
-    let annotationType = 'error'; // padrão
-    if (error.errorType === 'semantic-warning') {
-      annotationType = 'warning';
-    } else if (error.errorType === 'lexical') {
-      annotationType = 'error';
-    } else if (error.errorType === 'syntactic') {
-      annotationType = 'error';
-    } else if (error.errorType === 'semantic') {
-      annotationType = 'error';
-    }
-    
-    const annotation = {
-      row: error.line - 1, // Ace Editor usa índice baseado em 0
-      column: error.column || 0,
-      text: error.message,
-      type: annotationType
-    };
-    console.log(`Annotation ${index} (${error.errorType}):`, annotation);
-    return annotation;
-  });
+  const errorAnnotations = errors.map(error => ({
+    row: error.line - 1,       // Ace usa índice 0 para linhas
+    column: error.column || 0,
+    text: error.message,
+    type: 'error'              // Defina o tipo como 'error' para todos eles
+  }));
 
+  // 2. Mapeie o array de AVISOS para o mesmo formato.
+  const warningAnnotations = warnings.map(warning => ({
+    row: warning.line - 1,
+    column: warning.column || 0,
+    text: warning.message,
+    type: 'warning'            // Defina o tipo como 'warning' para todos eles
+  }));
+
+  // 3. Junte os dois arrays em um único array final de anotações.
+  const allAnnotations = [...errorAnnotations, ...warningAnnotations];
   // Criar markers visuais para as linhas
   const markers = errors.map((error, index) => {
     const isLexicalError = error.errorType === 'lexical';
@@ -92,7 +91,7 @@ export default function Editor({ value, onChange, errors = [] }) {
         showPrintMargin={false}
         showGutter={true}
         highlightActiveLine={true}
-        annotations={annotations}
+        annotations={allAnnotations}
         markers={markers}
         setOptions={{
           enableBasicAutocompletion: true,

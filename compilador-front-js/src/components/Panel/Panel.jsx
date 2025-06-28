@@ -1,37 +1,31 @@
 import React from 'react';
 import './Panel.css';
+import useStore from '../../store/useStore';
 
-export default function Panel({ height, onStartResize, table, sintatico, semantico }) {
-  const hasLexicalErrors = table?.erro?.linha && table.erro.linha.length > 0;
-  const hasSyntacticError = sintatico && sintatico.length > 0;
+export default function Panel() {
+  const {
+    panelHeight,
+    errors,
+    warnings
+  } = useStore();
   
-  // Separar erros e avisos semânticos
-  const semanticErrors = semantico?.filter(e => {
-    const mensagem = e.mensagem || e.Mensagem || '';
-    return !mensagem.startsWith('Aviso:');
-  }) || [];
+  // Cálculos baseados no array unificado de erros
+  const lexicalErrors = errors.filter(e => e.errorType === 'lexical');
+  const syntacticErrors = errors.filter(e => e.errorType === 'syntactic');
+  const semanticErrors = errors.filter(e => e.errorType === 'semantic');
+  const semanticWarnings = warnings
   
-  const semanticWarnings = semantico?.filter(e => {
-    const mensagem = e.mensagem || e.Mensagem || '';
-    return mensagem.startsWith('Aviso:');
-  }) || [];
-  
-  const hasSemanticErrors = semanticErrors.length > 0;
-  
-  // Contar total de erros e avisos
-  const totalErrors = (hasLexicalErrors ? table.erro.linha.length : 0) + 
-                     (hasSyntacticError ? sintatico.length : 0) + 
-                     semanticErrors.length;
+  const totalErrors = lexicalErrors.length + syntacticErrors.length + semanticErrors.length;
   const totalWarnings = semanticWarnings.length;
   
-  // Condição para mostrar sucesso
-  const showSuccess = !hasLexicalErrors && !hasSyntacticError && !hasSemanticErrors;
+  const showSuccess = totalErrors === 0;
 
   return (
-    <div className="resizable-panel" style={{ height }}>
-      <div className="resize-handle" onMouseDown={onStartResize} />
+    <div 
+      className="resizable-panel" 
+      style={{ height: panelHeight }}
+    >
       <div className="panel-content">
-        {/* Status da Compilação */}
         <div className="compilation-status">
           <h3>Status da Compilação</h3>
           

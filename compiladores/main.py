@@ -8,6 +8,7 @@ from lexico import AnaliseLexica
 from sintatico import SyntacticAnalyzer
 from semantico import AnalisadorSemantico
 from gerador import MEPACodeGenerator
+from MepaInterpreter import MepaInterpreterDebug
 
 app = Flask(__name__)
 CORS(app)
@@ -143,33 +144,6 @@ def enviar_conteudo():
             'error': str(e),
             'traceback': traceback_str
         }), 500
-        
-        # Formata resposta
-        resposta = {
-            'tabela_lexica': lexico.table,
-            'tabela_simbolos': tabela_simbolos,
-            'mepa_code': mepa_code,
-            'execution_output': execution_output,
-            'erros': {
-                'sintaxe': [{'linha': e[0], 'mensagem': e[1]} for e in erros_sintaticos],
-                'semantica': erros_semanticos
-            },
-            'debug': {
-                'erro_geracao': erro_geracao,
-                'tokens_count': len(lexico.table.get('token', []))
-            }
-        }
-        
-        return jsonify(resposta), 200
-        
-    except Exception as e:
-        import traceback
-        traceback_str = traceback.format_exc()
-        print(f"ERRO GERAL: {traceback_str}")
-        return jsonify({
-            'error': str(e),
-            'traceback': traceback_str
-        }), 500
     
 @app.route('/alfabeto_tokens', methods=['GET'])
 def alfabeto_tokens():
@@ -191,6 +165,31 @@ def tabela(id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/interpretar', methods=['POST'])
+def interpretador():
+    try:
+        # Acessa os dados JSON diretamente
+        data = request.get_json()
+        mepa_code = data.get('mepa_code')  # Acessa a chave diretamente
+        
+        print("Conteúdo recebido:", mepa_code)  # Debug
+        
+        # Verifica se mepa_code existe
+        if not mepa_code:
+            return jsonify({'error': 'mepa_code não encontrado no corpo da requisição'}), 400
+        
+        interpretador = MepaInterpreterDebug(mepa_code)
+        resultado = interpretador.run()
+        print("Resultado: ")
+        print(resultado)
+
+        return jsonify({
+            "memoria": resultado['memory'],
+            "pilha": resultado['stack_top'],
+            'saida': resultado['saida']
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
     
 if __name__ == '__main__':
     app.run(debug=True)
