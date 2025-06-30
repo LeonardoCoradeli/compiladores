@@ -1,5 +1,5 @@
 import re
-from Backend.lexico.alfabeto import tokens
+from lexico.alfabeto import tokens
 import string
 
 class AnaliseLexica:

@@ -1,14 +1,20 @@
+import sys
+import os
+
+# Adiciona o diretório atual ao Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 from flask import Flask, request, jsonify
-from Backend.lexico.alfabeto import obter_tokens
+from lexico.alfabeto import obter_tokens
 from flask_cors import CORS
-from Backend.utils.utils import find_file
-from Backend.utils.tabela import get_table
-from Backend.sintatico.follow_sets import get_follow_set
-from Backend.lexico.lexico import AnaliseLexica
-from Backend.sintatico.sintatico import SyntacticAnalyzer
-from Backend.semantico.semantico import AnalisadorSemantico
-from Backend.sintatico.gerador import MEPACodeGenerator
-from Backend.mepa.MepaInterpreter import MepaInterpreterDebug
+from utils.utils import find_file
+from utils.tabela import get_table
+from sintatico.follow_sets import get_follow_set
+from lexico.lexico import AnaliseLexica
+from sintatico.sintatico import SyntacticAnalyzer
+from semantico.semantico import AnalisadorSemantico
+from sintatico.gerador import MEPACodeGenerator
+from mepa.MepaInterpreter import MepaInterpreterDebug
 
 app = Flask(__name__)
 CORS(app)

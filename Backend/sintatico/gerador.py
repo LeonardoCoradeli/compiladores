@@ -7,7 +7,7 @@ class MEPACodeGenerator:
         self.scope_stack = ["global"]
         self.label_counter = 0
         
-        # Estruturas para Backpatching
+        
         self.labels = {}
         self.backpatch_list = {}
 
@@ -120,7 +120,7 @@ class MEPACodeGenerator:
                     self._apply_operator(operator_stack.pop(), operand_stack, operators)
                 operator_stack.append(token)
                 prev_token_is_operand = False
-            elif token == 'right_parenteses': # Token para '('
+            elif token == 'right_parenteses': 
                 operator_stack.append(token)
                 prev_token_is_operand = False
 
@@ -148,26 +148,26 @@ class MEPACodeGenerator:
         return i
     
     def _parse_if_statement(self, tokens, lexemas, start_idx):
-        i = start_idx + 1 # Pula 'if'
-        if i < len(tokens) and tokens[i] == 'right_parenteses': i += 1 # Consome '('
+        i = start_idx + 1 
+        if i < len(tokens) and tokens[i] == 'right_parenteses': i += 1 
         i = self._parse_simple_expression(tokens, lexemas, i)
-        if i < len(tokens) and tokens[i] == 'left_parenteses': i += 1 # Consome ')'
+        if i < len(tokens) and tokens[i] == 'left_parenteses': i += 1 
             
         false_label = self._new_label()
         end_label = self._new_label()
         
         self._add_jump_instruction('DSVF', false_label)
         
-        if i < len(tokens) and tokens[i] == 'execute_conditional': i += 1 # Consome 'then'
+        if i < len(tokens) and tokens[i] == 'execute_conditional': i += 1 
         i = self._parse_statement_block(tokens, lexemas, i)
         
-        if i < len(tokens) and tokens[i] == 'otherwise_conditional': # Se existe um 'else'
+        if i < len(tokens) and tokens[i] == 'otherwise_conditional': 
             self._add_jump_instruction('DSVS', end_label)
             self._define_label(false_label)
-            i += 1 # Consome 'else'
+            i += 1 
             i = self._parse_statement_block(tokens, lexemas, i)
             self._define_label(end_label)
-        else: # Se não há 'else'
+        else: 
             self._define_label(false_label)
         
         return i
@@ -177,26 +177,26 @@ class MEPACodeGenerator:
         end_label = self._new_label()
         
         self._define_label(start_label)
-        i = start_idx + 1 # Pula 'while'
-        if i < len(tokens) and tokens[i] == 'right_parenteses': i += 1 # Consome '('
+        i = start_idx + 1 
+        if i < len(tokens) and tokens[i] == 'right_parenteses': i += 1 
         i = self._parse_simple_expression(tokens, lexemas, i)
-        if i < len(tokens) and tokens[i] == 'left_parenteses': i += 1 # Consome ')'
+        if i < len(tokens) and tokens[i] == 'left_parenteses': i += 1 
         
         self._add_jump_instruction('DSVF', end_label)
         
-        if i < len(tokens) and tokens[i] == 'execute_loop': i += 1 # Consome 'do'
+        if i < len(tokens) and tokens[i] == 'execute_loop': i += 1 
         i = self._parse_statement_block(tokens, lexemas, i)
         self._add_jump_instruction('DSVS', start_label)
         self._define_label(end_label)
         return i
 
-    # --- CORRIGIDO ---
+    
     def _parse_procedure_call(self, tokens, lexemas, start_idx):
         proc_name = lexemas[start_idx]
-        proc_label = f'PROC_{proc_name}' # Rótulo para o backpatching
+        proc_label = f'PROC_{proc_name}' 
         i = start_idx + 1
         
-        if i < len(tokens) and tokens[i] == 'right_parenteses': # Consome '('
+        if i < len(tokens) and tokens[i] == 'right_parenteses': 
             i += 1
             while i < len(tokens) and tokens[i] != 'left_parenteses':
                 i = self._parse_simple_expression(tokens, lexemas, i)
@@ -204,10 +204,10 @@ class MEPACodeGenerator:
                     i += 1
                 else:
                     break
-            if i < len(tokens) and tokens[i] == 'left_parenteses': # Consome ')'
+            if i < len(tokens) and tokens[i] == 'left_parenteses': 
                 i += 1
         
-        # Usa o sistema de backpatching para a chamada
+        
         self._add_jump_instruction('CHPR', proc_label)
         return i
 
@@ -215,7 +215,7 @@ class MEPACodeGenerator:
         cmd = lexemas[start_idx]
         i = start_idx + 1
         
-        if i < len(tokens) and tokens[i] == 'right_parenteses': i += 1 # Consome '('
+        if i < len(tokens) and tokens[i] == 'right_parenteses': i += 1 
         
         if cmd == 'read':
             if i < len(tokens) and tokens[i] == 'identifier':
@@ -229,7 +229,7 @@ class MEPACodeGenerator:
             self.code.append(('IMPR',))
             self.code_address += 1
         
-        if i < len(tokens) and tokens[i] == 'left_parenteses': i += 1 # Consome ')'
+        if i < len(tokens) and tokens[i] == 'left_parenteses': i += 1 
         return i
     
     def _parse_statement_block(self, tokens, lexemas, start_idx):
@@ -292,7 +292,7 @@ class MEPACodeGenerator:
                 proc_name = lexemas[proc_start_idx + 1]
                 proc_label = f'PROC_{proc_name}'
                 
-                # --- CORRIGIDO: Define o rótulo do procedimento para resolver chamadas pendentes ---
+                
                 self._define_label(proc_label)
                 
                 self._enter_scope(proc_name)
