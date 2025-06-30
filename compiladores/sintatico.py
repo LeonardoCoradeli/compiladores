@@ -157,11 +157,11 @@ class SyntacticAnalyzer:
         elif rule is False:
             self.stack.pop() 
         else:
-            # Gerar mensagem de erro mais amigável
+      
             current_structure = self._get_friendly_non_terminal_name(stack_top)
             found_token = self._get_friendly_token_name(current_token['type'])
             
-            # Buscar tokens esperados
+
             expected_tokens_from_table = [tk for (nt, tk), rl in self.table.items() 
                                         if nt == stack_top and rl is not None and rl is not False]
             
@@ -182,7 +182,7 @@ class SyntacticAnalyzer:
             
             self.errors.append((current_token['line'], error_msg))
             
-            # Recuperação de erro usando conjunto FOLLOW
+           
             follow_set_for_stack_top = self._get_follow_set(stack_top)
             can_sync_on_current = current_token['type'] in follow_set_for_stack_top
 

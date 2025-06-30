@@ -31,10 +31,55 @@
   height: 100%;
 }
 
-/* Marker para destacar linhas de erro */
+/* 
+ * SISTEMA DE VISUALIZAÇÃO DE ERROS NO EDITOR
+ * ==========================================
+ * 
+ * 1. Erros Léxicos: 
+ *    - Borda vermelha sólida à esquerda (linha inteira)
+ *    - Fundo vermelho translúcido
+ * 
+ * 2. Erros Sintáticos:
+ *    - Borda laranja sólida à esquerda (linha inteira)
+ *    - Fundo laranja translúcido
+ * 
+ * 3. Erros Semânticos:
+ *    - Borda laranja escura sólida à esquerda (linha inteira)
+ *    - Fundo laranja escuro translúcido
+ * 
+ * 4. Avisos Semânticos:
+ *    - Borda amarela sólida à esquerda (linha inteira)
+ *    - Fundo amarelo translúcido
+ */
+
+/* Marker para destacar linhas de erro léxico */
 .error-marker {
-  background-color: rgba(255, 0, 0, 0.15) !important;
-  border-left: 4px solid #ff0000 !important;
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  border-left: 4px solid #dc3545 !important;
+  position: absolute !important;
+  z-index: 20 !important;
+}
+
+/* Marker para destacar linhas de erro sintático */
+.syntactic-error-marker {
+  background-color: rgba(255, 152, 0, 0.15) !important;
+  border-left: 4px solid #ff9800 !important;
+  position: absolute !important;
+  z-index: 20 !important;
+}
+
+/* Marker para erros semânticos (linha inteira) */
+.semantic-error-marker {
+  background-color: rgba(230, 81, 0, 0.15) !important;
+  border-left: 4px solid #e65100 !important;
+  position: absolute !important;
+  z-index: 20 !important;
+}
+
+/* Marker para avisos semânticos (linha inteira) */
+.semantic-warning-marker {
+  background-color: rgba(255, 193, 7, 0.15) !important;
+  border-left: 4px solid #ffc107 !important;
   position: absolute !important;
   z-index: 20 !important;
 }
@@ -44,15 +89,33 @@
   background-color: rgba(255, 0, 0, 0.1) !important;
 }
 
-/* Estilo para células da margem com erro */
+/* Estilo para células da margem com erro léxico */
 .ace_gutter-cell.ace_error {
   background-color: #ffebee !important;
-  color: #c62828 !important;
+  color: #dc3545 !important;
 }
 
-/* Tooltip de erro */
+/* Estilo para células da margem com erro sintático */
+.ace_gutter-cell.ace_syntactic {
+  background-color: #fff3e0 !important;
+  color: #ff9800 !important;
+}
+
+/* Estilo para células da margem com avisos */
+.ace_gutter-cell.ace_warning {
+  background-color: #fff8e1 !important;
+  color: #ffc107 !important;
+}
+
+/* Estilo para células da margem com erros semânticos */
+.ace_gutter-cell.ace_semantic {
+  background-color: #fff3e0 !important;
+  color: #e65100 !important;
+}
+
+/* Tooltip de erro léxico */
 .ace_tooltip {
-  background: #f44336 !important;
+  background: #dc3545 !important;
   color: white !important;
   border: none !important;
   border-radius: 4px !important;
@@ -63,15 +126,57 @@
   word-wrap: break-word !important;
 }
 
+/* Tooltip de erro sintático */
+.ace_tooltip.ace_syntactic {
+  background: #ff9800 !important;
+  color: white !important;
+}
+
+/* Tooltip de aviso */
+.ace_tooltip.ace_warning {
+  background: #ffc107 !important;
+  color: #212529 !important;
+}
+
+/* Tooltip de erro semântico */
+.ace_tooltip.ace_semantic {
+  background: #e65100 !important;
+  color: white !important;
+}
+
+/* Tooltip de aviso semântico */
+.ace_tooltip.ace_semantic-warning {
+  background: #ffc107 !important;
+  color: #212529 !important;
+}
+
 /* Garante que o destaque da linha ativa não sobreponha os erros */
 .ace_active-line {
   z-index: 10 !important;
 }
 
-/* Força o estilo dos markers de erro */
+/* Força o estilo dos markers de erro léxico */
 .ace_marker-layer .error-marker {
-  background-color: rgba(255, 0, 0, 0.15) !important;
-  border-left: 4px solid #ff0000 !important;
+  background-color: rgba(220, 53, 69, 0.15) !important;
+  border-left: 4px solid #dc3545 !important;
+}
+
+/* Força o estilo dos markers de erro sintático */
+.ace_marker-layer .syntactic-error-marker {
+  background-color: rgba(255, 152, 0, 0.15) !important;
+  border-left: 4px solid #ff9800 !important;
+}
+
+/* Força o estilo dos markers de erro semântico (linha inteira) */
+.ace_marker-layer .semantic-error-marker {
+  background-color: rgba(230, 81, 0, 0.15) !important;
+  border-left: 4px solid #e65100 !important;
+}
+
+/* Força o estilo dos markers de aviso semântico (linha inteira) */
+.ace_marker-layer .semantic-warning-marker {
+  background-color: rgba(255, 193, 7, 0.15) !important;
+  border-left: 4px solid #ffc107 !important;
 }
 
 /* Paleta harmônica para tokens LALG */

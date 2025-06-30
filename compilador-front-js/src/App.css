@@ -121,3 +121,31 @@
 .run-button:hover {
   background: #2980b9;
 }
+.interpretation-result {
+  padding: 20px;
+  font-family: monospace;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.result-section {
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.result-section h4 {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 5px;
+}
+
+.result-section pre {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 3px;
+  max-height: 300px;
+  overflow-y: auto;
+}
