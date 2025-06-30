@@ -1,14 +1,14 @@
 from flask import Flask, request, jsonify
-from alfabeto import obter_tokens
+from Backend.lexico.alfabeto import obter_tokens
 from flask_cors import CORS
-from utils import find_file
-from tabela import get_table
-from follow_sets import get_follow_set
-from lexico import AnaliseLexica
-from sintatico import SyntacticAnalyzer
-from semantico import AnalisadorSemantico
-from gerador import MEPACodeGenerator
-from MepaInterpreter import MepaInterpreterDebug
+from Backend.utils.utils import find_file
+from Backend.utils.tabela import get_table
+from Backend.sintatico.follow_sets import get_follow_set
+from Backend.lexico.lexico import AnaliseLexica
+from Backend.sintatico.sintatico import SyntacticAnalyzer
+from Backend.semantico.semantico import AnalisadorSemantico
+from Backend.sintatico.gerador import MEPACodeGenerator
+from Backend.mepa.MepaInterpreter import MepaInterpreterDebug
 
 app = Flask(__name__)
 CORS(app)
