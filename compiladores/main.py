@@ -186,7 +186,7 @@ def interpretador():
         return jsonify({
             "memoria": resultado['memory'],
             "pilha": resultado['stack_top'],
-            'saida': resultado['saida']
+            'saida': resultado['output']
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
