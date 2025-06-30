@@ -114,6 +114,10 @@ class SyntacticAnalyzer:
                     friendly_structure = self._get_friendly_non_terminal_name(stack_top)
                     self.errors.append((current_line, f"Erro: O programa terminou inesperadamente. Era esperado continuar com {friendly_structure}."))
                 break 
+
+            if self.tokens[self.index]['type'] == 'comment_block':
+                self.index += 1
+                continue
                 
             current_token = self.tokens[self.index]
 
